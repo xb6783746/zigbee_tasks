@@ -50,6 +50,7 @@ PURPOSE:
 #include <zb_aps.h>
 #include "zb_zdo.h"
 #include <zb_mac.h>
+#include <controller.h>
 
 #ifndef ZB_ROUTER_ROLE
 #error Router role is not compiled!
@@ -107,6 +108,9 @@ void zb_zdo_startup_complete(zb_uint8_t param) ZB_CALLBACK
     {
         TRACE_MSG(TRACE_APS1, "Device STARTED OK", (FMT__0));
 
+        zb_af_set_data_indication(data_indication);
+
+        start(0);
     }
     else
     {
@@ -114,5 +118,22 @@ void zb_zdo_startup_complete(zb_uint8_t param) ZB_CALLBACK
     }
 }
 
+void data_indication(zb_uint8_t param)
+{
+    zb_uint8_t *ptr;
+    zb_buf_t *asdu = ZB_BUF_FROM_REF(param);
+
+    /* Remove APS header from the packet */
+    ZB_APS_HDR_CUT_P(asdu, ptr);
+
+    TRACE_MSG(TRACE_INFO1, "RESPONSE: packet %p", (FMT__P, asdu));
+
+    for (int i = 0 ; i < ZB_BUF_LEN(asdu) ; ++i)
+    {
+        TRACE_MSG(TRACE_APS2, "%x %c", (FMT__D_C, (int)ptr[i], ptr[i]));
+    }
+
+    zb_free_buf(asdu);
+}
 
 /*! @} */
