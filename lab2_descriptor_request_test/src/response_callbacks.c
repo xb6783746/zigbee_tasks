@@ -64,4 +64,22 @@ static void simple_descr_resp_callback(uint8_t param){
     parse_simple_descr_cluster_list(&resp->simple_desc, &cluster_list);
 
     log_simple_descr_resp(resp, &cluster_list);
+
+    zb_buf_t *out_buf = zb_get_out_buf();
+
+    zb_apsde_data_req_t *req;
+    ZB_BUF_INITIAL_ALLOC(out_buf, 10, req);
+    req = ZB_GET_BUF_TAIL(out_buf, sizeof(zb_apsde_data_req_t));
+
+    req->dst_addr.addr_short = resp->hdr.nwk_addr;
+    req->addr_mode = ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
+    req->tx_options = ZB_APSDE_TX_OPT_ACK_TX;
+    req->radius = 1;
+    req->profileid = resp->simple_desc.app_profile_id;
+    req->src_endpoint = resp->simple_desc.endpoint;
+    req->dst_endpoint = resp->simple_desc.endpoint;
+    req->clusterid = cluster_list.input_clusters[0];
+    out_buf->u.hdr.handle = 0x11;
+
+    ZB_SCHEDULE_CALLBACK(zb_apsde_data_request, ZB_REF_FROM_BUF(out_buf));
 }
