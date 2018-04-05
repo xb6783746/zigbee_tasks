@@ -41,6 +41,17 @@ void active_ep_descr_resp_callback(zb_uint8_t param){
     zb_uint8_t *ep_list = zdp_cmd + sizeof(zb_zdo_ep_resp_t);
 
     log_active_ep_descr_resp(resp, ep_list);
+
+    zb_uint16_t nwk = resp->nwk_addr;
+    zb_uint8_t ep = ep_list[0];
+
+    zb_zdo_simple_desc_req_t *req;
+
+    ZB_BUF_INITIAL_ALLOC(buf, sizeof(zb_zdo_simple_desc_req_t), req);
+    req->nwk_addr = nwk;
+    req->endpoint = ep;
+
+    zb_zdo_simple_desc_req(param, simple_descr_resp_callback);
 }
 
 static void simple_descr_resp_callback(uint8_t param){
