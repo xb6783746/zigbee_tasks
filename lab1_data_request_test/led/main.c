@@ -51,7 +51,7 @@ PURPOSE:
 #include <zb_aps.h>
 #include "zb_zdo.h"
 #include <led_controller.h>
-#include <zb_mac.h>
+#include <zb_address.h>
 
 #ifndef ZB_ROUTER_ROLE
 #error Router role is not compiled!
@@ -67,6 +67,7 @@ PURPOSE:
 
 
 void data_indication(zb_uint8_t param) ZB_CALLBACK;
+
 static void send_data(zb_buf_t *buf);
 
 zb_ieee_addr_t g_ieee_addr = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x09};
@@ -75,7 +76,7 @@ MAIN()
 {
     ARGV_UNUSED;
 
-    if ( argc < 3 )
+    if (argc < 3)
     {
         printf("%s <read pipe path> <write pipe path>\n", argv[0]);
         return 0;
@@ -91,8 +92,7 @@ MAIN()
     if (zdo_dev_start() != RET_OK)
     {
         TRACE_MSG(TRACE_ERROR, "zdo_dev_start failed", (FMT__0));
-    }
-    else
+    } else
     {
         zdo_main_loop();
     }
@@ -112,10 +112,9 @@ void zb_zdo_startup_complete(zb_uint8_t param) ZB_CALLBACK
         zb_af_set_data_indication(data_indication);
 
         send_data(buf);
-    }
-    else
+    } else
     {
-        TRACE_MSG(TRACE_ERROR, "Device started FAILED status %d", (FMT__D, (int)buf->u.hdr.status));
+        TRACE_MSG(TRACE_ERROR, "Device started FAILED status %d", (FMT__D, (int) buf->u.hdr.status));
     }
 }
 
@@ -128,9 +127,9 @@ void data_indication(zb_uint8_t param)
     ZB_APS_HDR_CUT_P(asdu, ptr);
 
     TRACE_MSG(TRACE_APS2, "data_indication: packet %p len %d handle 0x%x", (FMT__P_D_D,
-            asdu, (int)ZB_BUF_LEN(asdu), asdu->u.hdr.status));
+            asdu, (int) ZB_BUF_LEN(asdu), asdu->u.hdr.status));
 
-    led_packet_t *packet = (led_packet_t*)ptr;
+    led_packet_t *packet = (led_packet_t *) ptr;
 
     parse(packet);
 }
@@ -153,7 +152,7 @@ static void send_data(zb_buf_t *buf)
 
     buf->u.hdr.handle = 0x11;
 
-    for (i = 0 ; i < ZB_TEST_DATA_SIZE ; ++i)
+    for (i = 0; i < ZB_TEST_DATA_SIZE; ++i)
     {
         ptr[i] = (zb_uint8_t) (i % 32 + '0');
     }

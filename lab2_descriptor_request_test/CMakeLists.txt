@@ -8,7 +8,7 @@ add_executable(router
         src/controller.c
         src/response_logger.c
         src/simple_descr_parser.c
-)
+        )
 
 target_include_directories(
         router PUBLIC

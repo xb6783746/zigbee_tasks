@@ -5,30 +5,32 @@
 
 #include <zb_types.h>
 
-#define LED_COMMAND_PACKET_SIZE 10
 
-
-typedef enum {
+typedef enum led_command_s
+{
 
     LedControlCommand,
     LedSetLevelCommand,
     LedLevelUpDownCommand
-} LedCommand;
+} led_command_t;
 
-typedef enum{
+typedef enum
+{
 
     On = 1,
     Off = 2,
     Toggle = 3
 } led_control_value_t;
 
-typedef enum {
+typedef enum
+{
 
     Up = 1,
     Down = 2
 } led_up_down_value_t;
 
-typedef struct led_packet{
+typedef struct led_packet
+{
 
     zb_uint8_t command_type;
     zb_uint8_t data;

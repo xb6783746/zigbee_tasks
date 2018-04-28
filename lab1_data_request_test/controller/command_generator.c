@@ -2,7 +2,6 @@
 #include <common.h>
 #include <command_sender.h>
 #include "zb_common.h"
-#include "command_sender.h"
 
 #define DELAY 3
 
@@ -10,7 +9,8 @@
 
 static zb_uint8_t create_command_buf(zb_uint16_t addr, zb_uint8_t val);
 
-void command_generator_generate(zb_uint16_t addr) {
+void command_generator_generate(zb_uint16_t addr)
+{
 
 
     ZB_SCHEDULE_ALARM(
@@ -45,9 +45,10 @@ void command_generator_generate(zb_uint16_t addr) {
 
 }
 
-static zb_uint8_t create_command_buf(zb_uint16_t addr, zb_uint8_t val){
+static zb_uint8_t create_command_buf(zb_uint16_t addr, zb_uint8_t val)
+{
 
-    zb_buf_t* buf = zb_get_in_buf();
+    zb_buf_t *buf = zb_get_in_buf();
 
     led_command_args_t *args = ZB_GET_BUF_PARAM(buf, led_command_args_t);
 

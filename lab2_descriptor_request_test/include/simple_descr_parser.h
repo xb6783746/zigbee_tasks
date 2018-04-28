@@ -5,7 +5,8 @@
 
 #include <zb_common.h>
 
-typedef struct simple_descr_cluster_list_s {
+typedef struct simple_descr_cluster_list_s
+{
 
     zb_uint8_t app_input_cluster_count;
     zb_uint16_t *input_clusters;

@@ -2,13 +2,7 @@
 
 #include <common.h>
 #include "zb_common.h"
-#include "zb_scheduler.h"
-#include "zb_bufpool.h"
-#include "zb_nwk.h"
 #include "zb_aps.h"
-#include "zb_zdo.h"
-#include "zb_secur.h"
-#include "zb_secur_api.h"
 #include <command_sender.h>
 
 #define LED_ENDPOINT 10
@@ -16,24 +10,29 @@
 #define LED_CLUSTER 0x54
 
 static void send(zb_buf_t *buf, zb_uint16_t addr);
-static void process(zb_uint8_t param, zb_uint8_t command_id);
 
-void led_send_led_control_command(zb_uint8_t param){
+static void fill_buffer_and_send(zb_uint8_t param, zb_uint8_t command_id);
 
-    process(param, LedControlCommand);
+void led_send_led_control_command(zb_uint8_t param)
+{
+
+    fill_buffer_and_send(param, LedControlCommand);
 }
 
-void led_send_set_level_command(zb_uint8_t param){
+void led_send_set_level_command(zb_uint8_t param)
+{
 
-    process(param, LedSetLevelCommand);
+    fill_buffer_and_send(param, LedSetLevelCommand);
 }
 
-void led_send_level_up_down_command(zb_uint8_t param){
+void led_send_level_up_down_command(zb_uint8_t param)
+{
 
-    process(param, LedLevelUpDownCommand);
+    fill_buffer_and_send(param, LedLevelUpDownCommand);
 }
 
-static void process(zb_uint8_t param, zb_uint8_t command_id){
+static void fill_buffer_and_send(zb_uint8_t param, zb_uint8_t command_id)
+{
 
     zb_buf_t *buf = ZB_BUF_FROM_REF(param);
 
@@ -43,7 +42,7 @@ static void process(zb_uint8_t param, zb_uint8_t command_id){
     zb_uint16_t addr = ptr->addr;
 
     led_packet_t *packet;
-    ZB_BUF_INITIAL_ALLOC(buf, LED_COMMAND_PACKET_SIZE, packet);
+    ZB_BUF_INITIAL_ALLOC(buf, sizeof(led_packet_t), packet);
 
     packet->command_type = command_id;
     packet->data = val;
@@ -51,7 +50,8 @@ static void process(zb_uint8_t param, zb_uint8_t command_id){
     send(buf, addr);
 }
 
-static void send(zb_buf_t *buf, zb_uint16_t addr){
+static void send(zb_buf_t *buf, zb_uint16_t addr)
+{
 
     zb_apsde_data_req_t *req;
 
