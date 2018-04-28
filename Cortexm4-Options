@@ -1,0 +1,33 @@
+
+set(PLATFORM cortexm4)
+
+set(PLATFORM_DEFINES -DZB_CORTEXM4 -Dcortexm4 -DUSE_STDPERIPH_DRIVER -DSTM32F4_DISCOVERY -DZB_MRF24J40 -DZB_TRANSPORT_CORTEXM4_UART -DZB_TRANSPORT_CORTEXM4_DATA_SPI)
+
+set(TRACE_DEFINES -DZB_TRACE_LEVEL=4 -DZB_TRACE_MASK=0x0000)
+set(USE_DEEP_GDB -ggdb3)
+set(DEBUG_DEFINES -DDEBUG ${TRACE_DEFINES} -DCHECK_RADIO_REGS ${USE_DEEP_GDB})
+#set(DEBUG_CFLAGS -g)
+#set(RELEASE_CFLAGS -O3)
+#set(PROFILE_CFLAGS -g -O3 -pg)
+#set(WERROR -Werror)
+set(ANTI_WARNING
+        -Wno-unused-local-typedefs
+        -Wno-format-zero-length
+        -Wno-format-zero-length
+        -Wno-int-to-pointer-cast
+        -Wno-pointer-to-int-cast
+        -Wno-unused-but-set-variable)
+
+set(WARN_OPTIONS -W -Wall -Wpointer-arith -Wcast-align -std=gnu99 ${ANTI_WARNING})
+set(WARN_OPTIONS_CXX -W -Wall -Wpointer-arith -Wcast-align -pedantic)
+set(CFLAGS_BUILD_CFG -g -O0 -Wall ${CORTEX} -DZB_LITTLE_ENDIAN)
+
+set(DEFINES ${PLATFORM_DEFINES} -DZB_TRANSPORT_CORTEXM4 -DZB_LITTLE_ENDIAN -DZB_DEBUG_BUFFERS ${TRACE_DEFINES})
+set(CFLAGS ${CFLAGS_BUILD_CFG} ${CFLAGS_USER} ${DEFINES} -pipe ${WARN_OPTIONS} -fno-strict-aliasing ${WERROR})
+
+set(CXXFLAGS ${CFLAGS_BUILD_CFG} ${CFLAGS_USER} -pipe ${WARN_OPTIONS_CXX} -fno-strict-aliasing ${WERROR})
+
+#set(CMAKE_CXX_FLAGS ${CXXFLAGS})
+#set(CMAKE_C_FLAGS ${CFLAGS})
+
+add_definitions(${DEFINES})
