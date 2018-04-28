@@ -67,7 +67,7 @@ PURPOSE: ZigBee trace. Application should include it.
    TRACE_MSG(TRACE_COMMON3, "%p calling cb %p param %hd", (FMT_P_P_H, (void*)ent, ent->func, ent->param));
 
    FMT_P_P_H and similar constants are defined in zb_trace_fmts.h and are sum of
-   argument sizes. Actual for 8051, ignored in Unix.
+   argument sizes. Actual for 8051, ignored in Unix. And maybe actual in cortex.
 
    See \see tests/trace.c for usage example.
  */
@@ -154,11 +154,30 @@ void zb_trace_msg_8051(zb_char_t ZB_IAR_CODE *file_name, zb_int_t line_number, z
 #define _T1(s, l, args) if ((zb_int_t)ZB_TRACE_LEVEL>=(zb_int_t)l && ((s) & ZB_TRACE_MASK)) zb_trace_msg_8051 args
 #define TRACE_MSG(lm, fmt, args) _T1(lm, args)
 
-#else  /* !unix, !8051 */
+// -------------------------- Cortex ----------------------------
+#elif defined cortexm4
+
+	void ZB_SERIAL_Init(void);
+
+	#define TRACE_INIT(name)   void ZB_SERIAL_Init(void)
+	#define TRACE_DEINIT()
+
+	/**
+	 Print trace message
+	*/
+
+	void zb_trace_msg_cortex(zb_char_t *file_name, zb_int_t line_number, zb_uint8_t args_size, ...);
+	
+	#define _T1(s, l, args) if ((zb_int_t)ZB_TRACE_LEVEL>=(zb_int_t)l && ((s) & ZB_TRACE_MASK)) zb_trace_msg_cortex args
+
+	#define TRACE_MSG(lm, fmt, args)
+
+#else
+//-----------------------------------------------------------
 
 #error Port me!
 
-#endif  /* unix, 8051 */
+#endif  /* unix, 8051, cortexm4 */
 
 
 #else  /* if trace off */
@@ -253,7 +272,7 @@ typedef struct zb_addr64_struct_s
 /* Keil and sdcc put byte values to the stack as is, but IAR casts it to 16-bit
  * integers, so constant lengths differs */
 
-#ifndef ZB_IAR
+#if !defined ZB_IAR && !defined cortexm4
 
 #define FMT__0                                   __FILE__,__LINE__, 0
 #define FMT__A                                   __FILE__,__LINE__, 8
@@ -392,6 +411,234 @@ typedef struct zb_addr64_struct_s
 #define FMT__H_P_H                               __FILE__,__LINE__, 5
 #define FMT__H_H_D_D                             __FILE__,__LINE__, 6
 
+
+#elif defined cortexm4 // GCC & IAR
+
+
+#ifndef ZB_BINARY_TRACE
+#define TRACE_ARG_SIZE(n_h, n_d, n_l, n_p, n_a) __FILE__,__LINE__, (n_h*4 + n_d*4 + n_l*4 + n_p*4 + n_a*8)
+#else
+#define TRACE_ARG_SIZE(n_h, n_d, n_l, n_p, n_a) ZB_TRACE_FILE_ID,__LINE__, (n_h*4 + n_d*4 + n_l*4 + n_p*4 + n_a*8)
+#endif
+
+
+#define FMT__0                                          TRACE_ARG_SIZE(0,0,0,0,0)
+#define FMT__A                                          TRACE_ARG_SIZE(0,0,0,0,1)
+#define FMT__A_A                                        TRACE_ARG_SIZE(0,0,0,0,2)
+#define FMT__A_D_A_P                                    TRACE_ARG_SIZE(0,1,0,1,2)
+#define FMT__A_D_D_P_H                                  TRACE_ARG_SIZE(1,2,0,1,1)
+#define FMT__A_D_H                                      TRACE_ARG_SIZE(1,1,0,0,1)
+#define FMT__A_D_H_D                                    TRACE_ARG_SIZE(1,2,0,0,1)
+#define FMT__C                                          TRACE_ARG_SIZE(1,0,0,0,0)
+#define FMT__D                                          TRACE_ARG_SIZE(0,1,0,0,0)
+#define FMT__D_A                                        TRACE_ARG_SIZE(0,1,0,0,1)
+#define FMT__D_A_D_D_D_D_D_D_D_D                        TRACE_ARG_SIZE(0,9,0,0,1)
+#define FMT__D_A_D_P_H_H_H                              TRACE_ARG_SIZE(3,2,0,1,1)
+#define FMT__D_A_P                                      TRACE_ARG_SIZE(0,1,0,1,1)
+#define FMT__A_P                                        TRACE_ARG_SIZE(0,0,0,1,1)
+#define FMT__D_C                                        TRACE_ARG_SIZE(1,1,0,0,0)
+#define FMT__D_D                                        TRACE_ARG_SIZE(0,2,0,0,0)
+#define FMT__D_D_A_A                                    TRACE_ARG_SIZE(0,2,0,0,2)
+#define FMT__D_D_A_D                                    TRACE_ARG_SIZE(0,3,0,0,1)
+#define FMT__D_D_A_D_D_D_D                              TRACE_ARG_SIZE(0,6,0,0,1)
+#define FMT__D_D_D                                      TRACE_ARG_SIZE(0,3,0,0,0)
+#define FMT__D_D_D_C                                    TRACE_ARG_SIZE(1,3,0,0,0)
+#define FMT__D_D_D_D                                    TRACE_ARG_SIZE(0,4,0,0,0)
+#define FMT__D_D_D_D_D_D_D_D_D_D_D_D_D_D_D_D_D          TRACE_ARG_SIZE(0,17,0,0,0)
+#define FMT__D_D_D_P                                    TRACE_ARG_SIZE(0,3,0,1,0)
+#define FMT__D_D_P                                      TRACE_ARG_SIZE(0,2,0,1,0)
+#define FMT__D_H_D_P                                    TRACE_ARG_SIZE(1,2,0,1,0)
+#define FMT__D_D_P_D                                    TRACE_ARG_SIZE(0,3,0,1,0)
+#define FMT__D_D_P_P_P                                  TRACE_ARG_SIZE(0,2,0,3,0)
+#define FMT__D_H                                        TRACE_ARG_SIZE(1,1,0,0,0)
+#define FMT__D_D_H                                      TRACE_ARG_SIZE(1,2,0,0,0)
+#define FMT__D_H_H                                      TRACE_ARG_SIZE(2,1,0,0,0)
+#define FMT__D_H_H_H_H_H_H_D_D_D_D                      TRACE_ARG_SIZE(6,5,0,0,0)
+#define FMT__D_H_P                                      TRACE_ARG_SIZE(1,1,0,1,0)
+#define FMT__D_P                                        TRACE_ARG_SIZE(0,1,0,1,0)
+#define FMT__D_P_D                                      TRACE_ARG_SIZE(0,2,0,1,0)
+#define FMT__D_P_H_H_D_H_H                              TRACE_ARG_SIZE(4,2,0,1,0)
+#define FMT__D_P_P                                      TRACE_ARG_SIZE(0,1,0,2,0)
+#define FMT__D_P_P_D_D_H_H                              TRACE_ARG_SIZE(2,3,0,2,0)
+#define FMT__D_P_P_H                                    TRACE_ARG_SIZE(1,1,0,2,0)
+#define FMT__H                                          TRACE_ARG_SIZE(1,0,0,0,0)
+#define FMT__H_A                                        TRACE_ARG_SIZE(1,0,0,0,1)
+#define FMT__H_A_A                                      TRACE_ARG_SIZE(1,0,0,0,2)
+#define FMT__D_A_A_H                                    TRACE_ARG_SIZE(1,1,0,0,2)
+#define FMT__H_A_H_H_H_H_H_H_H_H                        TRACE_ARG_SIZE(9,0,0,0,1)
+#define FMT__H_C_D_C                                    TRACE_ARG_SIZE(3,1,0,0,0)
+#define FMT__H_D                                        TRACE_ARG_SIZE(1,1,0,0,0)
+#define FMT__H_D_A_H_D                                  TRACE_ARG_SIZE(2,2,0,0,1)
+#define FMT__H_D_A_H_H_H_H                              TRACE_ARG_SIZE(5,1,0,0,1)
+#define FMT__H_D_D                                      TRACE_ARG_SIZE(1,2,0,0,0)
+#define FMT__H_D_D_D_H_H_D                              TRACE_ARG_SIZE(3,4,0,0,0)
+#define FMT__H_H                                        TRACE_ARG_SIZE(2,0,0,0,0)
+#define FMT__H_H_D                                      TRACE_ARG_SIZE(2,1,0,0,0)
+#define FMT__H_H_H                                      TRACE_ARG_SIZE(3,0,0,0,0)
+#define FMT__H_H_H_H                                    TRACE_ARG_SIZE(4,0,0,0,0)
+#define FMT__H_H_P                                      TRACE_ARG_SIZE(2,0,0,1,0)
+#define FMT__H_H_P_D                                    TRACE_ARG_SIZE(2,1,0,1,0)
+#define FMT__H_H_D_P                                    TRACE_ARG_SIZE(2,1,0,1,0)
+#define FMT__H_P                                        TRACE_ARG_SIZE(1,0,0,1,0)
+#define FMT__L                                          TRACE_ARG_SIZE(0,0,1,0,0)
+#define FMT__L_L                                        TRACE_ARG_SIZE(0,0,2,0,0)
+#define FMT__H_L                                        TRACE_ARG_SIZE(1,0,1,0,0)
+#define FMT__L_D_D_D                                    TRACE_ARG_SIZE(0,3,1,0,0)
+#define FMT__L_D_D                                      TRACE_ARG_SIZE(0,2,1,0,0)
+#define FMT__L_D                                        TRACE_ARG_SIZE(0,1,1,0,0)
+#define FMT__D_L_L                                      TRACE_ARG_SIZE(0,1,2,0,0)
+#define FMT__D_L_L_L                                    TRACE_ARG_SIZE(0,1,3,0,0)
+#define FMT__P_L_P_P_P                                  TRACE_ARG_SIZE(0,0,1,4,0)
+#define FMT__P                                          TRACE_ARG_SIZE(0,0,0,1,0)
+#define FMT__P_D                                        TRACE_ARG_SIZE(0,1,0,1,0)
+#define FMT__P_D_D                                      TRACE_ARG_SIZE(0,2,0,1,0)
+#define FMT__P_D_D_D                                    TRACE_ARG_SIZE(0,3,0,1,0)
+#define FMT__P_D_D_D_D_D                                TRACE_ARG_SIZE(0,5,0,1,0)
+#define FMT__P_D_D_D_D_D_D                              TRACE_ARG_SIZE(0,6,0,1,0)
+#define FMT__P_D_D_D_D_D_D_D                            TRACE_ARG_SIZE(0,7,0,1,0)
+#define FMT__P_D_D_D_H_D                                TRACE_ARG_SIZE(1,4,0,1,0)
+#define FMT__P_D_H                                      TRACE_ARG_SIZE(1,1,0,1,0)
+#define FMT__P_H_D_H                                    TRACE_ARG_SIZE(2,1,0,1,0)
+#define FMT__P_H_D_D                                    TRACE_ARG_SIZE(1,2,0,1,0)
+#define FMT__P_D_P                                      TRACE_ARG_SIZE(0,1,0,2,0)
+#define FMT__P_D_P_D                                    TRACE_ARG_SIZE(0,2,0,2,0)
+#define FMT__P_H                                        TRACE_ARG_SIZE(1,0,0,1,0)
+#define FMT__P_H_D                                      TRACE_ARG_SIZE(1,1,0,1,0)
+#define FMT__P_H_H                                      TRACE_ARG_SIZE(2,0,0,1,0)
+#define FMT__P_H_H_L                                    TRACE_ARG_SIZE(2,0,1,1,0)
+#define FMT__P_H_L                                      TRACE_ARG_SIZE(1,0,1,1,0)
+#define FMT__H_P_H_P                                    TRACE_ARG_SIZE(2,0,0,2,0)
+#define FMT__P_L_H                                      TRACE_ARG_SIZE(1,0,1,1,0)
+#define FMT__P_H_P_H_L                                  TRACE_ARG_SIZE(2,0,1,2,0)
+#define FMT__P_H_P_P                                    TRACE_ARG_SIZE(1,0,0,3,0)
+#define FMT__P_H_P_P_P                                  TRACE_ARG_SIZE(1,0,0,4,0)
+#define FMT__P_P                                        TRACE_ARG_SIZE(0,0,0,2,0)
+#define FMT__P_P_D                                      TRACE_ARG_SIZE(0,1,0,2,0)
+#define FMT__P_P_D_D_H                                  TRACE_ARG_SIZE(1,2,0,2,0)
+#define FMT__P_P_D_H_H                                  TRACE_ARG_SIZE(2,1,0,2,0)
+#define FMT__P_P_H                                      TRACE_ARG_SIZE(1,0,0,2,0)
+#define FMT__P_P_P                                      TRACE_ARG_SIZE(0,0,0,3,0)
+#define FMT__P_P_P_D                                    TRACE_ARG_SIZE(0,1,0,3,0)
+#define FMT__H_H_H_D_D_H_A_H_A                          TRACE_ARG_SIZE(5,2,0,0,2)
+#define FMT__H_H_P_P_P                                  TRACE_ARG_SIZE(2,0,0,3,0)
+#define FMT__H_P_P_P_P                                  TRACE_ARG_SIZE(1,0,0,4,0)
+#define FMT__H_P_P_P_P_P                                TRACE_ARG_SIZE(1,0,0,5,0)
+#define FMT__D_H_D_P_D                                  TRACE_ARG_SIZE(1,3,0,1,0)
+#define FMT__D_D_D_D_D                                  TRACE_ARG_SIZE(0,5,0,0,0)
+#define FMT__H_D_D_D_D                                  TRACE_ARG_SIZE(1,4,0,0,0)
+#define FMT__D_D_D_D_H                                  TRACE_ARG_SIZE(1,4,0,0,0)
+#define FMT__D_H_H_D                                    TRACE_ARG_SIZE(2,2,0,0,0)
+#define FMT__D_P_D_D                                    TRACE_ARG_SIZE(0,3,0,1,0)
+#define FMT__H_H_H_D                                    TRACE_ARG_SIZE(3,1,0,0,0)
+#define FMT__H_D_H_H                                    TRACE_ARG_SIZE(3,1,0,0,0)
+#define FMT__P_H_H_H_H_H_H_H                            TRACE_ARG_SIZE(7,0,0,1,0)
+#define FMT__P_H_H_H_H_H_H                              TRACE_ARG_SIZE(6,0,0,1,0)
+#define FMT__D_D_H_D_H                                  TRACE_ARG_SIZE(2,3,0,0,0)
+#define FMT__H_D_D_H_H_H_H                              TRACE_ARG_SIZE(5,2,0,0,0)
+#define FMT__H_H_A_A                                    TRACE_ARG_SIZE(2,0,0,0,2)
+#define FMT__P_H_P_P_H                                  TRACE_ARG_SIZE(2,0,0,3,0)
+#define FMT__P_H_P_H                                    TRACE_ARG_SIZE(2,0,0,2,0)
+#define FMT__P_P_H_P                                    TRACE_ARG_SIZE(1,0,0,3,0)
+#define FMT__A_D_D                                      TRACE_ARG_SIZE(0,2,0,0,1)
+#define FMT__P_H_H_H                                    TRACE_ARG_SIZE(3,0,0,1,0)
+#define FMT__P_H_P                                      TRACE_ARG_SIZE(1,0,0,2,0)
+#define FMT__P_P_H_H                                    TRACE_ARG_SIZE(2,0,0,2,0)
+#define FMT__D_P_H_H_D_D                                TRACE_ARG_SIZE(2,3,0,1,0)
+#define FMT__A_H                                        TRACE_ARG_SIZE(1,0,0,0,1)
+#define FMT__P_H_D_L                                    TRACE_ARG_SIZE(1,1,1,1,0)
+#define FMT__H_H_H_P                                    TRACE_ARG_SIZE(3,0,0,1,0)
+#define FMT__A_D_P_H_H_H                                TRACE_ARG_SIZE(3,1,0,1,1)
+#define FMT__H_P_H_P_H_H                                TRACE_ARG_SIZE(4,0,0,2,0)
+#define FMT__H_P_H_P_H_H                                TRACE_ARG_SIZE(4,0,0,2,0)
+#define FMT__H_P_H_H_H_H                                TRACE_ARG_SIZE(5,0,0,1,0)
+#define FMT__H_D_H_H_H_H_H_H                            TRACE_ARG_SIZE(7,1,0,0,0)
+#define FMT__H_D_D_H_H_H                                TRACE_ARG_SIZE(4,2,0,0,0)
+#define FMT__D_D_H_H                                    TRACE_ARG_SIZE(2,2,0,0,0)
+#define FMT__H_H_D_H                                    TRACE_ARG_SIZE(3,1,0,0,0)
+#define FMT__D_H_H_H_H                                  TRACE_ARG_SIZE(4,1,0,0,0)
+#define FMT__H_H_H_D_H                                  TRACE_ARG_SIZE(4,1,0,0,0)
+#define FMT__H_D_H                                      TRACE_ARG_SIZE(2,1,0,0,0)
+#define FMT__H_D_H_D                                    TRACE_ARG_SIZE(2,2,0,0,0)
+#define FMT__D_H_D_H_H                                  TRACE_ARG_SIZE(3,2,0,0,0)
+#define FMT__H_P_H_P_H                                  TRACE_ARG_SIZE(3,0,0,2,0)
+#define FMT__H_P_H_P_H_H                                TRACE_ARG_SIZE(4,0,0,2,0)
+#define FMT__H_P_H_P_H_H_P                              TRACE_ARG_SIZE(4,0,0,3,0)
+#define FMT__H_P_H_H_H                                  TRACE_ARG_SIZE(4,0,0,1,0)
+#define FMT__D_H_D_H                                    TRACE_ARG_SIZE(2,2,0,0,0)
+#define FMT__D_H_H_H                                    TRACE_ARG_SIZE(3,1,0,0,0)
+#define FMT__D_P_H_P                                    TRACE_ARG_SIZE(1,1,0,1,0)
+#define FMT__H_H_D_H_P                                  TRACE_ARG_SIZE(3,1,0,1,0)
+#define FMT__H_H_H_D_H_P                                TRACE_ARG_SIZE(4,1,0,1,0)
+#define FMT__A_H_H                                      TRACE_ARG_SIZE(2,0,0,0,1)
+#define FMT__P_H_H_H_H                                  TRACE_ARG_SIZE(4,0,0,1,0)
+#define FMT__H_D_P_H_H_H_H_H                            TRACE_ARG_SIZE(6,1,0,1,0)
+#define FMT__P_H_H_H_L                                  TRACE_ARG_SIZE(3,0,1,1,0)
+#define FMT__H_H_H_H_H_H_H_H                            TRACE_ARG_SIZE(8,0,0,0,0)
+#define FMT__H_H_H_H_H_H_H                              TRACE_ARG_SIZE(7,0,0,0,0)
+#define FMT__H_H_H_H_H_H                                TRACE_ARG_SIZE(6,0,0,0,0)
+#define FMT__H_H_H_H_H                                  TRACE_ARG_SIZE(5,0,0,0,0)
+#define FMT__H_D_H_H_H                                  TRACE_ARG_SIZE(4,1,0,0,0)
+#define FMT__D_D_D_D_D_D                                TRACE_ARG_SIZE(0,6,0,0,0)
+#define FMT__P_H_H_H_H_D                                TRACE_ARG_SIZE(4,1,0,1,0)
+#define FMT__H_D_D_H_D_H                                TRACE_ARG_SIZE(3,3,0,0,0)
+#define FMT__H_P_H                                      TRACE_ARG_SIZE(2,0,0,1,0)
+#define FMT__H_H_D_D                                    TRACE_ARG_SIZE(2,2,0,0,0)
+#define FMT__D_P_H_H_H_H                                TRACE_ARG_SIZE(4,1,0,1,0)
+#define FMT__H_H_D_H_H_H_H_H_H_H_H                      TRACE_ARG_SIZE(10,1,0,0,0)
+#define FMT__P_H_H_H_A                                  TRACE_ARG_SIZE(3,0,0,1,1)
+#define FMT__H_D_D_H_H                                  TRACE_ARG_SIZE(3,2,0,0,0)
+#define FMT__H_D_H_H_H_H                                TRACE_ARG_SIZE(5,1,0,0,0)
+#define FMT__H_A_H_H_H                                  TRACE_ARG_SIZE(4,0,0,0,1)
+#define FMT__H_H                                        TRACE_ARG_SIZE(2,0,0,0,0)
+#define FMT__H_A_A_H_H                                  TRACE_ARG_SIZE(3,0,0,0,2)
+#define FMT__H_D_D_H_D                                  TRACE_ARG_SIZE(2,3,0,0,0)
+#define FMT__H_D_H_D_H_H                                TRACE_ARG_SIZE(4,2,0,0,0)
+#define FMT__H_A_H                                      TRACE_ARG_SIZE(2,0,0,0,1)
+#define FMT__L_L_D_D                                    TRACE_ARG_SIZE(0,2,2,0,0)
+#define FMT__H_H_H_H_D                                  TRACE_ARG_SIZE(4,1,0,0,0)
+#define FMT__P_P_P_H_H                                  TRACE_ARG_SIZE(2,0,0,3,0)
+#define FMT__P_P_P_D_P                                  TRACE_ARG_SIZE(0,1,0,4,0)
+#define FMT__H_P_P_P_D_P_P                              TRACE_ARG_SIZE(1,1,0,5,0)
+#define FMT__P_P_D_P_D                                  TRACE_ARG_SIZE(0,2,0,3,0)
+#define FMT__H_P_H_H                                    TRACE_ARG_SIZE(3,0,0,1,0)
+#define FMT__H_H_H_H_D_H                                TRACE_ARG_SIZE(5,1,0,0,0)
+#define FMT__D_H_D                                      TRACE_ARG_SIZE(1,2,0,0,0)
+#define FMT__D_H_D_D                                    TRACE_ARG_SIZE(1,3,0,0,0)
+#define FMT__D_D_D_H                                    TRACE_ARG_SIZE(1,3,0,0,0)
+#define FMT__P_D_D_D_D                                  TRACE_ARG_SIZE(0,4,0,1,0)
+#define FMT__H_P_D                                      TRACE_ARG_SIZE(1,1,0,1,0)
+#define FMT__D_D_D_H_H                                  TRACE_ARG_SIZE(2,3,0,0,0)
+#define FMT__D_A_H_H                                    TRACE_ARG_SIZE(2,1,0,0,1)
+#define FMT__P_P_P_P                                    TRACE_ARG_SIZE(0,0,0,4,0)
+#define FMT__P_D_D_H                                    TRACE_ARG_SIZE(1,2,0,1,0)
+#define FMT__P_P_H_H_H                                  TRACE_ARG_SIZE(3,0,0,2,0)
+#define FMT__H_H_L_H                                    TRACE_ARG_SIZE(3,0,1,0,0)
+#define FMT__H_C_H_C                                    TRACE_ARG_SIZE(4,0,0,0,0)
+#define FMT__H_D_H_D_D                                  TRACE_ARG_SIZE(2,3,0,0,0)
+#define FMT__H_L_A                                      TRACE_ARG_SIZE(1,0,1,0,1)
+#define FMT__A_A_A_A                                    TRACE_ARG_SIZE(0,0,0,0,4)
+#define FMT__AA                                         TRACE_ARG_SIZE(0,0,0,0,2)
+#define FMT__H_L_L_H_A                                  TRACE_ARG_SIZE(2,0,2,0,1)
+#define FMT__L_H_H                                      TRACE_ARG_SIZE(2,0,1,0,0)
+#define FMT__H_H_L                                      TRACE_ARG_SIZE(1,0,2,0,0)
+#define FMT__L_H                                        TRACE_ARG_SIZE(1,0,1,0,0)
+#define FMT__H_L_H_H_P                                  TRACE_ARG_SIZE(3,0,1,4,0)
+#define FMT__H_H_L_H_P                                  TRACE_ARG_SIZE(3,0,1,4,0)
+#define FMT__D_D_L                                      TRACE_ARG_SIZE(0,2,1,0,0)
+#define FMT__D_L_L_H                                    TRACE_ARG_SIZE(1,1,2,0,0)
+#define FMT__H_D_D_H_P                                  TRACE_ARG_SIZE(2,2,0,1,0)
+#define FMT__P_A                                        TRACE_ARG_SIZE(0,0,0,1,1)
+#define FMT__P_P_D_D                                    TRACE_ARG_SIZE(0,2,0,2,0)
+#define FMT__P_P_H_P_H                                  TRACE_ARG_SIZE(2,0,0,3,0)
+#define FMT__P_P_H_P_D_P                                TRACE_ARG_SIZE(1,2,0,4,0)
+#define FMT__P_H_P_D                                    TRACE_ARG_SIZE(1,1,0,2,0)
+#define FMT__P_P_D_D_P                                  TRACE_ARG_SIZE(0,2,0,3,0)
+#define FMT__D_P_H_H_H_H_H                              TRACE_ARG_SIZE(5,1,0,1,0)
+#define FMT__P_H_P_D_D_D                                TRACE_ARG_SIZE(1,3,0,2,0)
+#define FMT__P_H_P_D_D                                  TRACE_ARG_SIZE(1,2,0,2,0)
+#define FMT__D_H_D_D_H_D                                TRACE_ARG_SIZE(2,4,0,0,0)
+
+
 #else  /* IAR */
 
 #define FMT__0                                   __FILE__,__LINE__, 0
@@ -525,6 +772,8 @@ typedef struct zb_addr64_struct_s
 #define FMT__H_P_H                               __FILE__,__LINE__, 6
 #define FMT__H_H_D_D                             __FILE__,__LINE__, 8
 #define FMT__H_D_D_H_D_H                         __FILE__,__LINE__, 9
+
+
 #endif  /* IAR */
 
 /**
@@ -567,5 +816,6 @@ typedef struct zb_addr64_struct_s
 #define TRACE_ZCL3 TRACE_SUBSYSTEM_ZCL, 3
 
 /*! @} */
-
+// TODO: delete this after debugging stagel
+void zb_ser_putchar(char c);
 #endif /* ZB_LOGGER_H */

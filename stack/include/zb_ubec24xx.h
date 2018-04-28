@@ -45,6 +45,7 @@
 ****************************************************************************
 PURPOSE: ubec uz2400 specific code
 */
+#ifdef ZB_UZ2400
 #ifndef ZB_UBEC24XX_H
 #define ZB_UBEC24XX_H 1
 
@@ -277,9 +278,14 @@ SPI FLAG
 #define ZB_SET_NSS_DOWN()
 #define ZB_8051_DELAY()
 #endif
-
-
-
+/*
+#if defined cortexm4
+  #define ZB_SDCC_REENTRANT
+  #include "zb_bufpool.h"
+  #include "zb_osif_cortexm4.h"
+  #define ZB_CALLBACK
+#endif
+*/
 /**
    Trigger TX in normal UZ2400 FIFO
 
@@ -820,3 +826,4 @@ TRANS_CTX().tx_status = *((zb_uint8_t ZB_XDATA *)(ZB_SREG_TXSR|ZB_SHORT_REGS_BAS
 
 #endif /* not cc2530 */
 #endif /* ZB_UBEC24XX_H */
+#endif

@@ -292,6 +292,7 @@ void zb_mlme_scan_step(zb_uint8_t param) ZB_CALLBACK
         ZB_BUF_COPY(MAC_CTX().pending_buf, desc_list_buf);
         desc_count = ZB_BUF_LEN(desc_list_buf) / sizeof(zb_pan_descriptor_t);
         TRACE_MSG(TRACE_MAC3, "copied %hd pan desc", (FMT__H, desc_count));
+		TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_mlme_scan_step",(FMT__0));
         zb_free_buf(desc_list_buf);
         MAC_CTX().rt_ctx.active_scan.pan_desc_buf_param = ZB_UNDEFINED_BUFFER;
       }

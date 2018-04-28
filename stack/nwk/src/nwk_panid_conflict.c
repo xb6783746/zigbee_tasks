@@ -72,6 +72,7 @@ void zb_panid_conflict_got_network_report(zb_uint8_t param, zb_uint16_t *panids,
       || ZG->nwk.handle.panid_conflict)
   {
     TRACE_MSG(TRACE_NWK3, "panid conflict resolve is already in progress", (FMT__0));
+    TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_panid_conflict_got_network_report",(FMT__0));
     zb_free_buf(ZB_BUF_FROM_REF(param));
   }
   else
@@ -127,6 +128,7 @@ void zb_panid_conflict_scan_start(zb_uint8_t param) ZB_CALLBACK
   {
     TRACE_MSG(TRACE_NWK3, "NWK is busy, will resolve PANID conflict later", (FMT__0));
     ZG->nwk.handle.panid_conflict = 1;
+    TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_panid_conflict_scan_start",(FMT__0));
     zb_free_buf(ZB_BUF_FROM_REF(param));
   }
   else
@@ -244,6 +246,7 @@ void zb_panid_conflict_schedule_network_report(zb_uint8_t param, zb_uint16_t pan
   {
     TRACE_MSG(TRACE_NWK1, "panid conflict resolve is in progres, received new_panid 0x%x != conflicting panid 0x%x",
               (FMT__D_D, ZG->nwk.handle.new_panid, panid));
+    TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_panid_conflict_schedule_network_report",(FMT__0));
     zb_free_buf(ZB_BUF_FROM_REF(param));
     return;
   }
@@ -261,6 +264,7 @@ void zb_panid_conflict_schedule_network_report(zb_uint8_t param, zb_uint16_t pan
   }
   else
   {
+	  TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_panid_conflict_schedule_network_report",(FMT__0));
     zb_free_buf(ZB_BUF_FROM_REF(param));
   }
 }
@@ -279,6 +283,7 @@ void zb_panid_conflict_send_network_report(zb_uint8_t param) ZB_CALLBACK
       && ZG->nwk.handle.new_panid != 0)
   {
     TRACE_MSG(TRACE_NWK1, "Already got new panid - not need to send nwk report", (FMT__0));
+    TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_panid_conflict_send_network_report",(FMT__0));
     zb_free_buf(ZB_BUF_FROM_REF(param));
     return;
   }
@@ -335,7 +340,7 @@ void zb_panid_conflict_send_nwk_update(zb_uint8_t param) ZB_CALLBACK
   /* send request */
   ZB_SET_BUF_PARAM(ZB_BUF_FROM_REF(param), ZB_NWK_INTERNAL_NSDU_HANDLE, zb_uint8_t);
   ZB_SCHEDULE_CALLBACK(zb_nwk_forward, param);
-
+	TRACE_MSG(TRACE_NWK1,"zb_get_out_buf_delayed: zb_panid_conflict_send_nwk_update",(FMT__0));
   zb_get_out_buf_delayed(zb_panid_conflict_send_status_ind);
 
   TRACE_MSG(TRACE_NWK1, "<< zb_panid_conflict_send_network_update", (FMT__0));
@@ -379,7 +384,7 @@ void zb_panid_conflict_network_update_recv(zb_nwk_update_cmd_t *upd)
   TRACE_MSG(TRACE_NWK1, "zb_panid_conflict_network_update_recv update_id %hd panid %d",
             (FMT__H_D, upd->update_id, ZG->nwk.handle.new_panid));
   ZB_SCHEDULE_ALARM(zb_panid_conflict_set_panid_alarm, 0, ZB_NWK_BROADCAST_DELIVERY_TIME());
-
+  TRACE_MSG(TRACE_NWK1,"zb_get_out_buf_delayed: zb_panid_conflict_network_update_recv",(FMT__0));
   zb_get_out_buf_delayed(zb_panid_conflict_send_status_ind);
 }
 
@@ -390,6 +395,7 @@ void zb_panid_conflict_network_update_recv(zb_nwk_update_cmd_t *upd)
 void zb_panid_conflict_set_panid_alarm(zb_uint8_t param) ZB_CALLBACK
 {
   ZVUNUSED(param);
+  TRACE_MSG(TRACE_NWK1,"zb_get_out_buf_delayed: zb_panid_conflict_set_panid_alarm",(FMT__0));
   zb_get_out_buf_delayed(zb_panid_conflict_set_panid);
 }
 

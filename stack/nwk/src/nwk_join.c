@@ -787,6 +787,7 @@ void zb_nlme_rejoin_response(zb_uint8_t param) ZB_CALLBACK
   else
   {
     TRACE_MSG(TRACE_NWK1, "got rejoin resp, state differ - drop", (FMT__0));
+    TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_nlme_rejoin_response",(FMT__0));
     zb_free_buf(buf);
   }
 
@@ -866,11 +867,13 @@ void zb_mlme_orphan_indication(zb_uint8_t param)
   {
     /* orphan dev is not our child, drop */
     TRACE_MSG(TRACE_NWK1, "not a chld, drop", (FMT__0));
+    TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_mlme_orphan_indication",(FMT__0));
     zb_free_buf(buf);
   }
 #else
   /* ed doen't support orpan scan, just drop packet */
   TRACE_MSG(TRACE_NWK1, "orph ind for ed dev, drop", (FMT__0));
+  TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_mlme_orphan_indication",(FMT__0));
   zb_free_buf(buf);
 #endif
 

@@ -110,6 +110,7 @@ void zb_mlme_start_confirm(zb_uint8_t param) ZB_CALLBACK
 
       case ZB_NLME_STATE_PANID_CONFLICT_RESOLUTION:
         TRACE_MSG(TRACE_NWK1, "done panid update after panid conflict resolution", (FMT__0));
+        TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_mlme_start_confirm",(FMT__0));
         zb_free_buf(ZB_BUF_FROM_REF(param));
         break;
 

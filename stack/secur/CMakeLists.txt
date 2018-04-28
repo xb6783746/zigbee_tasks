@@ -5,6 +5,8 @@ set(SRC
         src/zdo_secur.c 
         src/nwk_secur.c 
         src/aps_secur.c
+        src/mac_secur.c
+        src/zb_TI_cc25xx_secur_ccm.c
 )
 
 add_library(secur OBJECT ${SRC})

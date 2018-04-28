@@ -134,7 +134,7 @@ void zb_ubec_check_int_status()
 
 /* Access via spidev differs to another methods: it has registers and fifo
  * access implemented in the transport. */
-#ifndef ZB_TRANSPORT_LINUX_SPIDEV
+#ifndef ZB_TRANSPORT_LINUX_SPIDEV 
 
 static void zb_uz_send_op_buf()
 {

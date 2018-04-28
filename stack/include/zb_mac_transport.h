@@ -115,6 +115,7 @@ zb_mac_transport_hdr_t;
 /**
    8051: Initialize in/out ring buffers
    Unix: Initialize MAC transport for unix.
+   Cortex: Initialize spi functions for unix.
 
    @param rpipe_path - path to read pipe. Incoming pipe from the NS. Used only
    on unix.
@@ -123,19 +124,31 @@ zb_mac_transport_hdr_t;
 
    @return nothing.
  */
+ 
+#ifdef ZB_TRANSPORT_LINUX_SPIDEV
+void zb_mac_transport_init() ZB_SDCC_REENTRANT;
+#elif defined cortexm4
+void zb_mac_transport_init();
+#else
+void zb_mac_transport_init(zb_char_t *rpipe_path, zb_char_t *wpipe_path) ZB_SDCC_REENTRANT;
+#endif
+/*
 #ifndef ZB_TRANSPORT_LINUX_SPIDEV
 void zb_mac_transport_init(zb_char_t *rpipe_path, zb_char_t *wpipe_path) ZB_SDCC_REENTRANT;
 #else
 void zb_mac_transport_init() ZB_SDCC_REENTRANT;
 #endif
+*/
 #else
 void zb_mac_transport_init() ZB_SDCC_REENTRANT;
+
 #endif
+
 
 /**
    Put zb_buf_t with adapter data to output queue.
 
-   On 8051 this buffer goes to SPI output queue.
+   On 8051 and Cortex this buffer goes to SPI output queue.
    On unix to output buffer.
 
    @param buf    - output buffer.

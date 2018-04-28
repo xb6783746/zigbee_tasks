@@ -132,8 +132,8 @@ typedef struct zdo_cb_hash_ent_s
 } zdo_cb_hash_ent_t;
 
 #define ZB_ZDO_CHECK_FAILS_MASK     1      /* flag to check if channel interference check is in progress */
-#define ZB_ZDO_SEND_WITH_ACK_MASK   (1 << 1) /* flag to specify sending with acknowledgement */
-#define ZB_ZDO_CHANNEL_CHANGED_MASK (1 << 2) /* flag shows that channel change opration was performed recently (server side) */
+#define ZB_ZDO_SEND_WITH_ACK_MASK   1 << 1 /* flag to specify sending with acknowledgement */
+#define ZB_ZDO_CHANNEL_CHANGED_MASK 1 << 2 /* flag shows that channel change opration was performed recently (server side) */
 
 #define ZB_ZDO_SET_CHECK_FAILS()   (ZG->zdo.flags |= ZB_ZDO_CHECK_FAILS_MASK)
 #define ZB_ZDO_CLEAR_CHECK_FAILS() (ZG->zdo.flags &= ~ZB_ZDO_CHECK_FAILS_MASK)

@@ -164,17 +164,16 @@ typedef zb_int16_t         zb_sbitfield_t;
 */
 
 typedef zb_uint16_t        zb_size_t;
+#endif
 
 
-#else
-/**
-   project-local 4-byte unsigned int type
-*/
-typedef unsigned int       zb_uint32_t;
+#if defined cortexm4
+#include <stdint.h>
+typedef uint32_t       zb_uint32_t;
 /**
    project-local 4-byte signed int type
 */
-typedef signed int         zb_int32_t;
+typedef int32_t         zb_int32_t;
 /**
    type to be used for unsigned bit fields inside structure
 */
@@ -184,12 +183,16 @@ typedef zb_uint32_t        zb_bitfield_t;
 */
 typedef zb_int32_t         zb_sbitfield_t;
 
+typedef zb_uint32_t        zb_size_t;
+typedef zb_size_t          zb_ptrsize_uint_t;
+#endif 
 
-#endif  /* ZB8051 */
+
+//#endif  /* ZB8051 */
 
 
-#else  /* ifndef UNIX */
-/* Unix */
+#else
+/* Unix*/
 
 #include <inttypes.h>
 
@@ -203,8 +206,8 @@ typedef int32_t            zb_int32_t;
 typedef char               zb_char_t;
 typedef unsigned char      zb_uchar_t;
 
-typedef unsigned           zb_bitfield_t;
-typedef signed             zb_sbitfield_t;
+typedef zb_uint32_t        zb_bitfield_t;
+typedef zb_int32_t         zb_sbitfield_t;
 
 /* Integer with size equal to the pointer size. */
 typedef zb_uint32_t        zb_size_t;

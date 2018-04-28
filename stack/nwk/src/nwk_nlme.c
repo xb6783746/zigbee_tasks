@@ -358,6 +358,7 @@ void zb_mlme_sync_loss_indication(zb_uint8_t param) ZB_CALLBACK
   else
   {
     /* do nothing, just drop frame */
+    TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_mlme_sync_loss_indication",(FMT__0));
     zb_free_buf(ZB_BUF_FROM_REF(param));
   }
 
@@ -502,6 +503,7 @@ void zb_nlme_get_confirm(zb_uint8_t param) ZB_CALLBACK
     TRACE_MSG(TRACE_NWK2, "attr %hd get param %hd", (FMT__H_H, conf->nib_attribute,  *(((zb_uint8_t *)conf) + sizeof(zb_nlme_get_confirm_t))));
   }
   TRACE_MSG(TRACE_NWK1, "<<zb_nlme_get_confirm status %hd", (FMT__H, conf->status));
+  TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_nlme_get_confirm",(FMT__0));
   zb_free_buf(buf);
 }
 
@@ -612,6 +614,7 @@ void zb_nlme_set_confirm(zb_uint8_t param) ZB_CALLBACK
   TRACE_MSG(TRACE_NWK1, "<<zb_nlme_set_confirm status %hd", (FMT__H, conf->status));
   }
 #endif
+TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_nlme_set_confirm",(FMT__0));
   zb_free_buf(buf);
 }
 #endif /* ZB_LIMITED_FEATURES */

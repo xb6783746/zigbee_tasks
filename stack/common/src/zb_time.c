@@ -58,10 +58,10 @@ PURPOSE: time functions implementation for 8051 for the Common bank
 
 void zb_timer_start(zb_time_t timeout)
 {
-  zb_time_t t_cur = ZB_TIMER_GET();
-  zb_time_t t = ZB_TIME_ADD(t_cur, timeout);
+  zb_time_t t_cur = ZB_TIMER_GET(); 			// software
+  zb_time_t t = ZB_TIME_ADD(t_cur, timeout); 	// software
 
-  ZB_DISABLE_ALL_INTER();
+  ZB_DISABLE_ALL_INTER();						// hardware.
   if (!ZB_TIMER_CTX().started
 #ifdef ZB8051
       || ZB_TIME_GE(t, ZB_TIMER_CTX().timer_stop)
@@ -74,12 +74,12 @@ void zb_timer_start(zb_time_t timeout)
     ZB_TIMER_CTX().timer_stop = t;
     ZB_TIMER_CTX().started = 1;
   }
-  ZB_ENABLE_ALL_INTER();
+  ZB_ENABLE_ALL_INTER();						// hardware
 
-  if (!ZB_CHECK_TIMER_IS_ON())
+  if (!ZB_CHECK_TIMER_IS_ON()) 			// hardware. must be define while porting
   {
     /* timer is stopped - start it */
-    ZB_START_HW_TIMER();
+    ZB_START_HW_TIMER();        		// hardware. must be define while porting
   }
 #if 0
 #ifdef ZB8051

@@ -50,7 +50,6 @@ PURPOSE: Packet buffers pool
 #define ZB_BUFPOOL_H 1
 
 
-
 /*! \addtogroup buf */
 /*! @{ */
 

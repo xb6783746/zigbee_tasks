@@ -48,7 +48,7 @@ PURPOSE: Declare ring buffer internals
 
 #ifndef ZB_RINGBUFFER_H
 #define ZB_RINGBUFFER_H 1
-
+#include <stddef.h>
 /*! \cond internals_doc */
 /**
    @addtogroup ZB_BASE

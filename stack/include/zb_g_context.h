@@ -111,8 +111,8 @@ extern ZB_SDCC_XDATA zb_intr_globals_t g_izb;
 #include "zb_af_globals.h"
 #include "zb_zdo_globals.h"
 #include "zb_zcl_globals.h"
-#include "zb_ubec24xx.h" /* TODO: configure this include depending
-                          * on transceiver */
+#include "zb_radio.h"
+
 #else
 #include "zb_ringbuffer.h"
 #endif /* ZB_SNIFFER */
@@ -145,6 +145,10 @@ struct zb_globals_s
 /**
    Global data area for data to be accessed from interrupt handlers
  */
+// TODO: remove this code later during total refactoring.
+
+
+ 
 struct zb_intr_globals_s
 {
   zb_io_ctx_t             ioctx;

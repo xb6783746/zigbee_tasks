@@ -185,6 +185,7 @@ void zb_nlme_rejoin_request(zb_uint8_t param) ZB_CALLBACK
   else
   {
     TRACE_MSG(TRACE_NWK1, "rejoin req tbl is full or bad request - drop req", (FMT__0));
+        TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_nlme_rejoin_request",(FMT__0));
     zb_free_buf(ZB_BUF_FROM_REF(param));
   }
 
@@ -240,6 +241,7 @@ void zb_nlme_rejoin_resp_sent(zb_uint8_t param) ZB_CALLBACK
   else
   {
     TRACE_MSG(TRACE_NWK1, "should never happen", (FMT__0));
+    TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_nlme_rejoin_resp_sent",(FMT__0));
     zb_free_buf(ZB_BUF_FROM_REF(param));
     ZB_ASSERT(0);
   }

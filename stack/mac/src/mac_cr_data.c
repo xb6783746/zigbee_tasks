@@ -375,6 +375,7 @@ send_data_resp:
     TRACE_MSG(TRACE_MAC2, "<< zb_handle_data_request_cmd ret", (FMT__0));
     if (MAC_CTX().pending_buf)
     {
+	TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_handle_data_request_cmd",(FMT__0));
       zb_free_buf(MAC_CTX().pending_buf);
       MAC_CTX().pending_buf = NULL;
     }
@@ -437,6 +438,7 @@ void zb_handle_data_request_cmd_continue(zb_uint8_t param) ZB_CALLBACK
       if (ZB_FCF_GET_FRAME_TYPE(&mhr_pend.frame_control) == MAC_FRAME_COMMAND)
       {
         TRACE_MSG(TRACE_MAC3, "mac cmd, free buffer %p", (FMT__P, MAC_CTX().pending_data_queue[data_found_index].pending_data));
+        TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_handle_data_request_cmd_continue",(FMT__0));
         zb_free_buf(MAC_CTX().pending_data_queue[data_found_index].pending_data);
       }
       else
@@ -461,6 +463,7 @@ void zb_handle_data_request_cmd_continue(zb_uint8_t param) ZB_CALLBACK
   {
     if (MAC_CTX().pending_buf)
     {
+		TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_handle_data_request_cmd_continue",(FMT__0));
       zb_free_buf(MAC_CTX().pending_buf);
       MAC_CTX().pending_buf = NULL;
     }

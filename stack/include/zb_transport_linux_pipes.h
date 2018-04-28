@@ -101,7 +101,7 @@ typedef struct zb_io_ctx_s
 #define ZB_START_HW_TIMER() /* nothing to do here */
 
 void zb_mac_wait_for_ext_event();
-#define ZB_TRY_IO() ((void) (zb_mac_wait_for_ext_event(), RET_OK))
+#define ZB_TRY_IO() (zb_mac_wait_for_ext_event(), RET_OK)
 
 #define ZB_GO_IDLE()
 #define CHECK_INT_N_TIMER()

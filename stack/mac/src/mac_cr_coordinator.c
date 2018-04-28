@@ -275,7 +275,7 @@ zb_ret_t zb_send_beacon_frame(zb_beacon_frame_params_t *beacon_frame_params) ZB_
   zb_mac_mhr_t mhr;
   zb_uint8_t *ptr = NULL;
   zb_ret_t ret;
-
+  zb_uint16_t crutch = 0;
   TRACE_MSG(TRACE_MAC1, ">>zb_send_beacon_frame", (FMT__0));
 
 /* mac spec  7.2.2.1 Beacon frame format
@@ -322,7 +322,11 @@ zb_ret_t zb_send_beacon_frame(zb_beacon_frame_params_t *beacon_frame_params) ZB_
 */
   mhr.seq_number = ZB_MAC_BSN();
   ZB_INC_MAC_BSN();
-  mhr.src_pan_id = MAC_PIB().mac_pan_id;
+//  #if defined cortexm4
+//	mhr.src_pan_id = (((MAC_PIB().mac_pan_id >> 8) & 0x00FF) | ((MAC_PIB().mac_pan_id <<8) & 0xFF00));
+//  #else
+	mhr.src_pan_id = MAC_PIB().mac_pan_id;
+//#endif
 
   if (beacon_frame_params->src_addr_mode == ZB_ADDR_64BIT_DEV)
   {
@@ -364,8 +368,9 @@ zb_ret_t zb_send_beacon_frame(zb_beacon_frame_params_t *beacon_frame_params) ZB_
 #endif
 
   ZB_SUPERFRAME_SET_ASS_PERMIT(ptr, MAC_PIB().mac_association_permit);
-
-  TRACE_MSG(TRACE_MAC3, "superframe %x ass perm %hd", (FMT__D_H, *(zb_uint16_t*)ptr, (zb_uint8_t)MAC_PIB().mac_association_permit));
+  
+  ZB_MEMCPY(&crutch,ptr,sizeof(zb_uint16_t));
+  TRACE_MSG(TRACE_MAC3, "superframe %x ass perm %hd", (FMT__D_H, crutch, (zb_uint8_t)MAC_PIB().mac_association_permit));
 
   ptr += sizeof(zb_uint16_t);
 

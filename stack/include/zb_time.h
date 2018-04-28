@@ -201,6 +201,10 @@ zb_timer_t;
 #include "zb_8051_time.h"
 #endif
 
+#if defined cortexm4
+  #include "zb_cortexm4_time.h"
+#endif
+
 /*! @} */
 /*! \endcond */
 

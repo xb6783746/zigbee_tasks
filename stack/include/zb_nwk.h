@@ -548,7 +548,7 @@ void zb_nwk_init();
    @return TRUE if it is ok to join to device with such LQI and FALSE otherwhise
  */
 #ifndef ZB_NS_BUILD
-#define ZB_LINK_QUALITY_IS_OK_FOR_JOIN(lqi) (((lqi) / (256 / 8)) >= 3)
+#define ZB_LINK_QUALITY_IS_OK_FOR_JOIN(lqi) 1// (((lqi) / (256 / 8)) >= 3)
 #else
                                            /* no lqi in NS - always ok */
 #define ZB_LINK_QUALITY_IS_OK_FOR_JOIN(lqi) 1

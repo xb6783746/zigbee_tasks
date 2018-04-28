@@ -222,6 +222,7 @@ static zb_ret_t zb_nwk_mesh_send_rreq(zb_buf_t *cbuf, zb_nwk_cmd_rreq_t *nwk_cmd
 #if 0
   else
   {
+	 TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_nwk_mesh_send_rrep",(FMT__0));
     zb_free_buf(cbuf);
     TRACE_MSG(TRACE_NWK1, "rreq buffer is full", (FMT__0));
     ret = RET_NO_MEMORY;
@@ -283,6 +284,7 @@ void zb_nwk_mesh_initiate_route_discovery(zb_uint8_t param) ZB_CALLBACK
   }
   else
   {
+	  TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_nwk_mesh_send_rrep",(FMT__0));
     zb_free_buf(cbuf);
     TRACE_MSG(TRACE_NWK1, "perepil", (FMT__0));
     ZB_ASSERT(0);
@@ -500,6 +502,7 @@ void zb_nwk_mesh_rreq_handler(zb_buf_t *buf, zb_nwk_hdr_t *nwk_hdr, zb_nwk_cmd_r
   if ( buf )
   {
     TRACE_MSG(TRACE_NWK1, "free buf %p", (FMT__P, buf));
+    TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_nlme_rejoin_request",(FMT__0));
     zb_free_buf(buf);
   }
   TRACE_MSG(TRACE_NWK1, "<< rreq_handler", (FMT__0));
@@ -614,6 +617,7 @@ void zb_nwk_mesh_rrep_handler(zb_buf_t *buf, zb_nwk_hdr_t *nwk_hdr, zb_nwk_cmd_r
   if ( buf )
   {
     TRACE_MSG(TRACE_NWK1, "free buf %p", (FMT__P, buf));
+    TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_nwk_mesh_rrep_handler",(FMT__0));
     zb_free_buf(buf);
   }
   TRACE_MSG(TRACE_NWK1, "<< rrep_handler", (FMT__0));
@@ -799,6 +803,7 @@ void zb_nwk_mesh_expiry_pending(zb_uint8_t param) ZB_CALLBACK
         if ( ZG->nwk.nib.pending_table[i].expiry == 0 )
         {
           TRACE_MSG(TRACE_NWK1, "free buf %p", (FMT__P, ZG->nwk.nib.pending_table[i].buf));
+			TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_nwk_mesh_expiry_pending",(FMT__0));
           zb_free_buf(ZG->nwk.nib.pending_table[i].buf);
           NWK_ARRAY_PUT_ENT(ZG->nwk.nib.pending_table, &ZG->nwk.nib.pending_table[i], ZG->nwk.nib.pending_table_cnt);
         }

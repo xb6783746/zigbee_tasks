@@ -61,7 +61,7 @@ PURPOSE: CCM* routines - to be used when HW is not available - that is, in Linux
 #include "zb_bank_common.h"
 #ifdef ZB_SECURITY
 
-#ifdef ZB_NS_BUILD
+#if defined ZB_NS_BUILD || defined cortexm4
 static void xor16(zb_uint8_t *v1, zb_uint8_t *v2, zb_uint8_t *result);
 static void aes128(zb_uint8_t *key, zb_uint8_t *msg, zb_uint8_t *c);
 
@@ -135,7 +135,7 @@ zb_ccm_decrypt_n_auth_stdsecur(
 }
 
 
-#ifdef ZB_NS_BUILD
+#if defined ZB_NS_BUILD || defined cortexm4
 /**
    CCM* encryption and authentication procedure for Standard security
  */

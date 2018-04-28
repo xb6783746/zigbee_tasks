@@ -134,16 +134,21 @@ void zb_mac_init() /* __reentrant for sdcc, to save DSEG space */
  * 0xffff. unit period = aBaseSuperframeDuration (== beacon interval)*/
   MAC_PIB().mac_transaction_persistence_time = ZB_MAC_TRANSACTION_PERSISTENCE_TIME;
 #endif
+  TRACE_MSG(TRACE_NWK1,"zb_get_out_buf: zb_mac_init",(FMT__0));
   MAC_CTX().operation_buf = zb_get_out_buf();
-
+  TRACE_MSG(TRACE_NWK1,"zb_get_in_buf: zb_mac_init",(FMT__0));
   MAC_CTX().operation_recv_buf = zb_get_in_buf();
 #ifdef ZB_SECURITY
+  TRACE_MSG(TRACE_NWK1,"zb_get_in_buf: zb_mac_init",(FMT__0));
   MAC_CTX().encryption_buf = zb_get_out_buf();
 #endif
 #ifndef ZB_NS_BUILD
   /* TODO: move HW init to the mcps.start */
+#if !defined cortexm4
   init_zu2400();
 #endif
+#endif
+
   MAC_PIB().mac_dsn = ZB_RANDOM();
   MAC_PIB().mac_bsn = ZB_RANDOM();
 #ifdef ZB_USE_RX_QUEUE
@@ -218,8 +223,8 @@ static zb_bool_t can_accept_frame(zb_mac_mhr_t mhr)
       TRACE_MSG(TRACE_COMMON1, "drop broadcast", (FMT__0));
     }
     else
-    {
 #endif
+	{
       if (ZB_FCF_GET_SECURITY_BIT(mhr.frame_control)
           && ZB_FCF_GET_FRAME_VERSION(mhr.frame_control) < MAC_FRAME_IEEE_802_15_4)
       {
@@ -235,6 +240,9 @@ static zb_bool_t can_accept_frame(zb_mac_mhr_t mhr)
   return ret;
 }
 
+
+
+
 void zb_mac_main_loop()
 {
   if (ZB_GET_TRANS_INT())
@@ -243,6 +251,7 @@ void zb_mac_main_loop()
     ZB_CHECK_INT_STATUS();
   }
 
+  
 #ifdef ZB_CC25XX
   if (ZB_MAC_GET_ACK_OK())
   {
@@ -317,6 +326,7 @@ void zb_mac_main_loop()
 #endif
 #endif
     {
+	  TRACE_MSG(TRACE_NWK1,"zb_get_in_buf: zb_mac_main_loop",(FMT__0));
       zb_buf_t *buf = zb_get_in_buf();
       if (buf)
       {
@@ -485,6 +495,7 @@ void zb_mac_parse_recv_data(zb_uint8_t param) ZB_CALLBACK
   }
   else
   {
+	  TRACE_MSG(TRACE_NWK1,"zb_free_buf: mac_parse_recv_data",(FMT__0));
     zb_free_buf(buf);
     buf = NULL;
   }
@@ -651,6 +662,7 @@ void zb_mlme_command_accept(zb_uint8_t param) ZB_CALLBACK
 #endif
     ZB_SCHEDULE_TX_CB(zb_handle_beacon_req, 0);
     TRACE_MSG(TRACE_MAC3, "free buf %p", (FMT__P, request));
+    TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_mlme_command_accept",(FMT__0));
     zb_free_buf(request);
     ZIG->ioctx.recv_data_buf = NULL;
   }
@@ -706,6 +718,7 @@ void zb_mlme_command_accept(zb_uint8_t param) ZB_CALLBACK
       }
       else
       {
+		TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_mlme_command_accept",(FMT__0));
         zb_free_buf(ZB_BUF_FROM_REF(param));
       }
 
@@ -849,6 +862,7 @@ void zb_mlme_ack_accept(zb_uint8_t param) ZB_CALLBACK
   }
 #endif
   TRACE_MSG(TRACE_MAC3, "free buf %p", (FMT__P, request));
+  TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_mlme_ack_accept",(FMT__0));
   zb_free_buf(request);
 
   TRACE_MSG(TRACE_MAC2, "<<mlme_ack_acc", (FMT__0));
@@ -964,6 +978,7 @@ void zb_mac_resp_timeout(zb_uint8_t param) ZB_CALLBACK
   else
   {
     TRACE_MSG(TRACE_MAC2, "free buf %p", (FMT__P, MAC_CTX().pending_buf));
+       TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_mac_resp_timeout",(FMT__0));
     zb_free_buf(MAC_CTX().pending_buf);
     MAC_CTX().pending_buf = NULL;
   }
@@ -991,6 +1006,7 @@ void zb_mac_indirect_data_timeout(zb_uint8_t param) ZB_CALLBACK
   {
     MAC_CTX().rt_ctx.indirect_data.cb_type = (zb_callback_type_t)param;
     MAC_CTX().rt_ctx.indirect_data.cb_status = MAC_NO_DATA;
+    TRACE_MSG(TRACE_NWK1,"zb_get_out_buf_delayed: zb_mac_indirect_data_timeout",(FMT__0));
     zb_get_out_buf_delayed(indirect_data_callback_caller);
   }
 }
@@ -1001,7 +1017,17 @@ zb_ret_t zb_check_cmd_tx_status()
   return RET_OK;
 #else
   zb_ret_t ret = RET_OK;
-  ZB_WAIT_FOR_TX();
+//  ZB_WAIT_FOR_TX();
+
+  while(!MAC_CTX().tx_cnt)         			
+  {                                 		
+	CHECK_INT_N_TIMER();          		
+    if (ZB_GET_TRANS_INT()) 
+    {
+		ZB_CHECK_INT_STATUS();  
+    }
+  }
+  
   if (ZB_TRANS_CHECK_CHANNEL_ERROR())
   {
     ZB_SET_MAC_STATUS(
@@ -1129,7 +1155,7 @@ void zb_mlme_get_request(zb_uint8_t param) ZB_CALLBACK
 
   TRACE_MSG(TRACE_APS2, ">>zb_mlme_get_req %d", (FMT__D, param));
   ZB_MEMCPY(&req, (zb_mlme_get_request_t *)ZB_BUF_BEGIN(buf), sizeof(req));
-
+  zb_uint16_t crutch = 0;	// need for correct memcpy work
   if (req.pib_attr == ZB_PHY_PIB_CURRENT_CHANNEL)
   {
     ZB_BUF_INITIAL_ALLOC(buf, sizeof(zb_mlme_get_confirm_t) + sizeof(zb_uint8_t), conf);
@@ -1240,7 +1266,9 @@ void zb_mlme_get_request(zb_uint8_t param) ZB_CALLBACK
   {
     ZB_BUF_INITIAL_ALLOC(buf, sizeof(zb_mlme_get_confirm_t) + sizeof(zb_uint16_t), conf);
     conf->pib_length = sizeof(zb_uint16_t);
-    *(((zb_uint16_t *)conf) + sizeof(zb_mlme_get_confirm_t)) = ZB_MAC_PIB_TRANSACTION_PERSISTENCE_TIME;
+   // *((zb_uint16_t*)((zb_uint8_t *)conf + sizeof(zb_mlme_get_confirm_t))) = ZB_MAC_PIB_TRANSACTION_PERSISTENCE_TIME;
+   crutch = ZB_MAC_PIB_TRANSACTION_PERSISTENCE_TIME;
+    ZB_MEMCPY(((zb_uint8_t *)conf)+sizeof(zb_mlme_get_confirm_t),&crutch, sizeof(crutch));
     conf->pib_index = 0;
   }
   else if (req.pib_attr == ZB_PIB_ATTRIBUTE_ASSOCIATED_PAN_COORD)
@@ -1254,7 +1282,9 @@ void zb_mlme_get_request(zb_uint8_t param) ZB_CALLBACK
   {
     ZB_BUF_INITIAL_ALLOC(buf, sizeof(zb_mlme_get_confirm_t) + sizeof(zb_uint16_t), conf);
     conf->pib_length = sizeof(zb_uint16_t);
-    *(((zb_uint16_t *)conf) + sizeof(zb_mlme_get_confirm_t)) = ZB_MAC_PIB_MAX_FRAME_TOTAL_WAIT_TIME;
+    //*(((zb_uint8_t *)conf) + sizeof(zb_mlme_get_confirm_t)) = ZB_MAC_PIB_MAX_FRAME_TOTAL_WAIT_TIME; // problems with alignment
+    crutch = ZB_MAC_PIB_MAX_FRAME_TOTAL_WAIT_TIME;
+    ZB_MEMCPY((((zb_uint8_t *)conf) + sizeof(zb_mlme_get_confirm_t)),&crutch,sizeof(crutch));
     conf->pib_index = 0;
   }
   else if (req.pib_attr == ZB_PIB_ATTRIBUTE_MAX_FRAME_RETRIES)
@@ -1304,6 +1334,7 @@ void zb_mlme_get_confirm(zb_uint8_t param) ZB_CALLBACK
   }
 
   TRACE_MSG(TRACE_APS2, "<<zb_mlme_get_confirm status %hd", (FMT__H, conf->status));
+   TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_mlme_get_confirm",(FMT__0));
   zb_free_buf(buf);
 }
 
@@ -1380,7 +1411,8 @@ void zb_mlme_set_request(zb_uint8_t param) ZB_CALLBACK
   }
   else if (req->pib_attr == ZB_PIB_ATTRIBUTE_COORD_SHORT_ADDRESS)
   {
-    ZB_PIB_COORD_SHORT_ADDRESS() = *((zb_uint16_t *)ptr);
+    //ZB_PIB_COORD_SHORT_ADDRESS() = *((zb_uint16_t *)ptr); // maybe that was an error
+    ZB_PIB_COORD_SHORT_ADDRESS() = *((zb_uint8_t *)ptr);
     ZB_TRANSCEIVER_SET_COORD_SHORT_ADDR(ZB_PIB_COORD_SHORT_ADDRESS());
   }
   else if (req->pib_attr == ZB_PIB_ATTRIBUTE_COORD_EXTEND_ADDRESS )
@@ -1393,7 +1425,8 @@ void zb_mlme_set_request(zb_uint8_t param) ZB_CALLBACK
   }
   else if (req->pib_attr == ZB_PIB_ATTRIBUTE_PANID)
   {
-    ZB_PIB_SHORT_PAN_ID() = *((zb_uint16_t *)ptr);
+    //ZB_PIB_SHORT_PAN_ID() = *((zb_uint16_t *)ptr);    
+    ZB_PIB_SHORT_PAN_ID() = *((zb_uint8_t *)ptr);
     ZB_UPDATE_PAN_ID();
   }
   else if (req->pib_attr == ZB_PIB_ATTRIBUTE_RX_ON_WHEN_IDLE)
@@ -1402,13 +1435,14 @@ void zb_mlme_set_request(zb_uint8_t param) ZB_CALLBACK
   }
   else if (req->pib_attr == ZB_PIB_ATTRIBUTE_SHORT_ADDRESS)
   {
-    TRACE_MSG(TRACE_APS3, "set SHORT_ADDRESS %x", (FMT__D, *((zb_uint16_t *)ptr)));
-    ZB_PIB_SHORT_ADDRESS() = *((zb_uint16_t *)ptr);
+    //TRACE_MSG(TRACE_APS3, "set SHORT_ADDRESS %x", (FMT__D, *((zb_uint16_t *)ptr)));
+    TRACE_MSG(TRACE_APS3, "set SHORT_ADDRESS %x", (FMT__D, *((zb_uint8_t *)ptr)));
+    ZB_PIB_SHORT_ADDRESS() = *((zb_uint8_t *)ptr);
     ZB_UPDATE_SHORT_ADDR();
   }
   else if (req->pib_attr == ZB_PIB_ATTRIBUTE_SUPER_FRAME_ORDER)
   {
-    MAC_PIB().mac_superframe_order = *((zb_uint16_t*)ptr);
+    MAC_PIB().mac_superframe_order = *((zb_uint8_t*)ptr);
   }
   else
   {

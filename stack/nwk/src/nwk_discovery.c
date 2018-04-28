@@ -340,6 +340,7 @@ void zb_mlme_beacon_notify_indication(zb_uint8_t param) ZB_CALLBACK
   if (param != (zb_uint8_t)~0)
 #endif
   {
+	  TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_mlme_beacon_notify_indication",(FMT__0));
     zb_free_buf((zb_buf_t *)ZB_BUF_FROM_REF(param));
   }
 #endif /* ZB_MAC_TESTING_MODE */

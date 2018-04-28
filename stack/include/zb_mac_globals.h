@@ -237,7 +237,7 @@ typedef struct zb_mac_ctx_s
 
   zb_mac_out_request_t  out;
 
-  zb_mac_rw_reg_t       rw_reg;
+  zb_mac_rw_reg_t       rw_reg;			// for what ?
   zb_uint8_t            byte_result_1;
   zb_uint8_t            mac_io_sync_mode; /* MAC performs sync/async i/o*/ /* TODO: move it to mac_flags !!!! */
   zb_mac_status_t       mac_status; /* MAC status of the last operation. NOTE: if operation

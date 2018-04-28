@@ -299,6 +299,7 @@ void zb_apsde_data_request(zb_uint8_t param) ZB_CALLBACK
   {
     /* Must send this packet to myself as well */
     ZB_RING_BUFFER_PUT(&ZG->aps.group.local_dup_q, param);
+    TRACE_MSG(TRACE_NWK1,"zb_get_in_buf_delayed: zb_apsde_data_request",(FMT__0));  
     zb_get_in_buf_delayed(zb_aps_pass_local_group_pkt_up);
   }
   else
@@ -337,6 +338,7 @@ void zb_aps_pass_local_group_pkt_up(zb_uint8_t param) ZB_CALLBACK
   }
   else
   {
+	  TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_aps_pass_local_group_pkt_up",(FMT__0));
     zb_free_buf(ZB_BUF_FROM_REF(param));
     ZB_ASSERT(0);
   }
@@ -349,6 +351,7 @@ void zb_aps_pass_up_group_buf(zb_uint8_t param) ZB_CALLBACK
   if (ZB_RING_BUFFER_IS_FULL(&ZG->aps.group.pass_up_q))
   {
     TRACE_MSG(TRACE_APS3, "no space in the queue - drop this packet", (FMT__0));
+    TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_aps_pass_up_group_buf",(FMT__0));
     zb_free_buf(buf);
   }
   else
@@ -361,6 +364,7 @@ void zb_aps_pass_up_group_buf(zb_uint8_t param) ZB_CALLBACK
       /* If queue is empty, group data passing up is not schedules */
       TRACE_MSG(TRACE_APS3, "schedule pass up group message", (FMT__0));
       ZG->aps.group.active_pass_up_buf = buf;
+      TRACE_MSG(TRACE_NWK1,"zb_get_in_buf_delayed: zb_aps_pass_up_group_buf",(FMT__0)); 
       zb_get_in_buf_delayed(zb_aps_pass_group_msg_up);
     }
     else
@@ -509,6 +513,7 @@ void zb_nlde_data_confirm(zb_uint8_t param) ZB_CALLBACK
   if (ZB_APS_FC_GET_FRAME_TYPE(*fc_p) == ZB_APS_FRAME_ACK)
   {
     /* This is APS ACK - free it */
+    TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_nlde_data_confirm",(FMT__0));
     zb_free_buf(nsdu);
   }
   else
@@ -553,6 +558,7 @@ void zb_nlde_data_confirm(zb_uint8_t param) ZB_CALLBACK
     {
       /* not found (hmm...) - free it */
       TRACE_MSG(TRACE_APS2, "strange buf %hd - free it", (FMT__H, param));
+      TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_nlde_data_confirm",(FMT__0));
       zb_free_buf(nsdu);
     }
   }
@@ -596,6 +602,7 @@ void zb_nlde_data_indication(zb_uint8_t param) ZB_CALLBACK
     zb_aps_hdr_parse(packet, &aps_hdr, ZB_TRUE);
     aps_ack_frame_handle(&aps_hdr);
 #endif
+	TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_nlde_data_indication",(FMT__0));
     zb_free_buf(packet);
   }
   else
@@ -604,6 +611,7 @@ void zb_nlde_data_indication(zb_uint8_t param) ZB_CALLBACK
         && !ZB_RING_BUFFER_IS_FULL(&ZG->aps.retrans.ack_q))
     {
       ZB_RING_BUFFER_PUT(&ZG->aps.retrans.ack_q, param);
+      TRACE_MSG(TRACE_NWK1,"zb_get_out_buf_delayed: zb_nlde_data_indication",(FMT__0));
       zb_get_out_buf_delayed(zb_aps_send_ack_and_continue);
     }
     else
@@ -643,6 +651,7 @@ void zb_nlde_data_indication_continue(zb_uint8_t param) ZB_CALLBACK
   if (aps_check_dups(aps_hdr.src_addr, aps_hdr.aps_counter))
   {
     TRACE_MSG(TRACE_APS2, "pkt #%d is a dup - drop", (FMT__D, aps_hdr.aps_counter));
+    TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_nlde_data_indication_continue",(FMT__0));
     zb_free_buf(packet);
   }
   else
@@ -654,6 +663,7 @@ void zb_nlde_data_indication_continue(zb_uint8_t param) ZB_CALLBACK
     if (ZB_APS_FC_GET_SECURITY(aps_hdr.fc)
         && zb_aps_unsecure_frame(packet) != RET_OK)
     {
+		TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_aps_send_ack_and_continue",(FMT__0));
       zb_free_buf(packet);
     }
     else
@@ -770,6 +780,7 @@ void zb_aps_pass_group_msg_up(zb_uint8_t param) ZB_CALLBACK
     /* No such group, or done with this buffer. Free buffer and reschedule myself to check next buffer */
     TRACE_MSG(TRACE_APS3, "done with buf %p/%hd",
               (FMT__P_H, ZG->aps.group.active_pass_up_buf, ZB_REF_FROM_BUF(ZG->aps.group.active_pass_up_buf)));
+    TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_aps_pass_group_msg_up",(FMT__0));
     zb_free_buf(ZG->aps.group.active_pass_up_buf);
     if (!ZB_RING_BUFFER_IS_EMPTY(&ZG->aps.group.pass_up_q))
     {
@@ -780,6 +791,7 @@ void zb_aps_pass_group_msg_up(zb_uint8_t param) ZB_CALLBACK
     else
     {
       ZG->aps.group.active_pass_up_buf = NULL;
+      TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_aps_pass_group_msg_up",(FMT__0));
       zb_free_buf(ZB_BUF_FROM_REF(param));
       TRACE_MSG(TRACE_APS3, "No more job of passing group data up", (FMT__0));
     }
@@ -800,6 +812,7 @@ void zb_aps_pass_group_msg_up(zb_uint8_t param) ZB_CALLBACK
     ZB_SCHEDULE_CALLBACK(zb_apsde_data_indication, param);
 
     /* schedule next pass up iteration */
+    TRACE_MSG(TRACE_NWK1,"zb_get_in_buf_delayed: zb_aps_pass_group_msg_up",(FMT__0));
     zb_get_in_buf_delayed(zb_aps_pass_group_msg_up);
   }
 }
@@ -1077,6 +1090,7 @@ static void done_with_this_ack(zb_ushort_t i, zb_uint8_t fc, zb_uint8_t status) 
   if (ZB_APS_FC_GET_ACK_FORMAT(fc))
   {
     TRACE_MSG(TRACE_APS2, "finally done with this commmand i %hd", (FMT__H, i));
+    TRACE_MSG(TRACE_NWK1,"zb_free_buf: done_with_this_ack",(FMT__0));
     zb_free_buf(ZB_BUF_FROM_REF(ZG->aps.retrans.hash[i].buf));
   }
   else
@@ -1216,6 +1230,7 @@ void zb_apsme_get_confirm(zb_uint8_t param) ZB_CALLBACK
               TRACE_ARG_64((((zb_uint8_t *)conf) + sizeof(zb_apsme_get_confirm_t)))));
   }
   TRACE_MSG(TRACE_APS2, "<<zb_apsme_get_confirm status %hd", (FMT__H, conf->status));
+  TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_apsme_get_confirm",(FMT__0));
   zb_free_buf(buf);
 }
 
@@ -1269,6 +1284,7 @@ void zb_apsme_set_confirm(zb_uint8_t param) ZB_CALLBACK
   TRACE_MSG(TRACE_APS2, "<<zb_apsme_set_confirm status %hd", (FMT__H, conf->status));
   }
 #endif
+TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_apsme_set_confirm",(FMT__0));
   zb_free_buf(buf);
 }
 #endif  /* ZB_LIMITED_FEATURES */

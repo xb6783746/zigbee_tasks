@@ -78,6 +78,7 @@ void zb_mlme_associate_response(zb_uint8_t param) ZB_CALLBACK
   }
   else
   {
+	  TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_mlme_associate_response",(FMT__0));
     zb_free_buf(ZB_BUF_FROM_REF(param));
   }
 }

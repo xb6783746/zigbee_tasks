@@ -568,6 +568,7 @@ void nwk_broadcast_transmition(zb_uint8_t param) ZB_CALLBACK
        * it's quite tricky. */
       if (param)
       {
+		  TRACE_MSG(TRACE_NWK1,"zb_free_buf: nwk_broadcast_transmition",(FMT__0));
         zb_free_buf(ZB_BUF_FROM_REF(param));
       }
       /* last time transmit this buffer to pass it up in .confirm */
@@ -614,6 +615,7 @@ void nwk_broadcast_transmition(zb_uint8_t param) ZB_CALLBACK
   else if (param)
   {
     /* free unnecessary buffer, could it ever happen? */
+    TRACE_MSG(TRACE_NWK1,"zb_free_buf: nwk_broadcast_transmition",(FMT__0));
     zb_free_buf(ZB_BUF_FROM_REF(param));
     param = 0;
   }
@@ -789,6 +791,7 @@ void zb_nwk_forward(zb_uint8_t param) ZB_CALLBACK
     else
 #endif
     {
+		TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_nwk_forward",(FMT__0));
       zb_free_buf(packet);
     }
   }
@@ -886,6 +889,7 @@ void zb_mcps_data_confirm(zb_uint8_t param) ZB_CALLBACK
       else
       {
         TRACE_MSG(TRACE_NWK3, "free confirm to internal nwk transmission", (FMT__0));
+        TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_mcps_data_confirm",(FMT__0));
         zb_free_buf(buf);
       }
     }
@@ -945,6 +949,7 @@ void new_buffer_allocated(zb_uint8_t param) ZB_CALLBACK
 
       default:
         ZB_ASSERT(0);
+        TRACE_MSG(TRACE_NWK1,"zb_free_buf: new_buffer_allocated",(FMT__0));
         zb_free_buf(ZB_BUF_FROM_REF(param));
         zb_free_buf(ZB_BUF_FROM_REF(ent->buf));
         break;
@@ -1000,9 +1005,11 @@ void zb_mcps_data_indication(zb_uint8_t param) ZB_CALLBACK
   TRACE_MSG(TRACE_NWK3, "hdr_size %d radius %hd frame type %hd", (FMT__D_H_H, hdr_size, nwk_hdr->radius, frame_type));
   if ( nwk_hdr->radius == 0
        || ( frame_type != ZB_NWK_FRAME_TYPE_COMMAND
-            && frame_type != ZB_NWK_FRAME_TYPE_DATA ))
+            && frame_type != ZB_NWK_FRAME_TYPE_DATA )
+            && (ZB_NWK_FRAMECTL_GET_PROTOCOL_VERSION((nwk_hdr->frame_control)) != ZB_PROTOCOL_VERSION ))
   {
     TRACE_MSG(TRACE_NWK1, "drop bad packet", (FMT__0));
+    TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_mcps_data_indication",(FMT__0));
     zb_free_buf(buf);
     goto done;
   }
@@ -1028,6 +1035,7 @@ void zb_mcps_data_indication(zb_uint8_t param) ZB_CALLBACK
       )
     {
       TRACE_MSG(TRACE_NWK1, "unsupported broadc pkt 0x%x - drop", (FMT__D, dst_addr));
+      TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_mcps_data_indication",(FMT__0));
       zb_free_buf(buf);
       goto done;
     }
@@ -1082,6 +1090,7 @@ if (!ZG->nwk.handle.joined_pro)
       if ( ent )
       {
         TRACE_MSG(TRACE_NWK1, "brc from %d to 0x%x seq %hd already proceed - drop", (FMT__D_H, src_addr, dst_addr, nwk_hdr->seq_num));
+        TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_mcps_data_indication",(FMT__0));
         zb_free_buf(buf);
         goto done;
       }
@@ -1102,6 +1111,7 @@ if (!ZG->nwk.handle.joined_pro)
         else
         {
           TRACE_MSG(TRACE_NWK1, "btt tbl full - drop", (FMT__0));
+          TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_mcps_data_indication",(FMT__0));
           zb_free_buf(buf);
           goto done;
         }
@@ -1237,6 +1247,7 @@ if (!ZG->nwk.handle.joined_pro)
   {
     /* this frame is not for us, drop it */
     TRACE_MSG(TRACE_NWK1, "drop", (FMT__0));
+    TRACE_MSG(TRACE_NWK1,"zb_free_buf: mcps_data_ind",(FMT__0));
     zb_free_buf(buf);
     goto done;
   }
@@ -1349,6 +1360,7 @@ void nwk_frame_indication(zb_uint8_t param) ZB_CALLBACK
           || !ZB_EXTPANID_CMP(report->epid, ZB_NIB_EXT_PAN_ID()))
       {
         TRACE_MSG(TRACE_ERROR, "drop report cmd %hd", (FMT__H, ZB_NWK_REPORT_COMMAND_ID(report->command_options)));
+        TRACE_MSG(TRACE_NWK1,"zb_free_buf: nwk_frame_indication",(FMT__0));
         zb_free_buf(buf);
       }
       else
@@ -1383,6 +1395,7 @@ void nwk_frame_indication(zb_uint8_t param) ZB_CALLBACK
            || !ZB_EXTPANID_CMP(upd->epid, ZB_NIB_EXT_PAN_ID()) )
       {
         TRACE_MSG(TRACE_ERROR, "drop nwk update cmd %hd", (FMT__H, ZB_NWK_REPORT_COMMAND_ID(upd->command_options)));
+        TRACE_MSG(TRACE_NWK1,"zb_free_buf: nwk_frame_indication",(FMT__0));
         zb_free_buf(buf);
       }
       else
@@ -1395,6 +1408,7 @@ void nwk_frame_indication(zb_uint8_t param) ZB_CALLBACK
 #endif  /* ZB_LIMITED_FEATURES */
     {
       TRACE_MSG(TRACE_ERROR, "unknown cmd %hd - drop", (FMT__H, command_id));
+      TRACE_MSG(TRACE_NWK1,"zb_free_buf: nwk_frame_indication",(FMT__0));
       zb_free_buf(buf);
     }
   }
@@ -1498,6 +1512,7 @@ static void zb_nwk_leave_handler(zb_uint8_t param, zb_nwk_hdr_t *nwk_hdr, zb_uin
       {
         ZG->nwk.leave_context.leave_ind_prnt.addr_ref = addr_ref;
         ZG->nwk.leave_context.leave_ind_prnt.rejoin = ZB_LEAVE_PL_GET_REJOIN(lp);
+        TRACE_MSG(TRACE_NWK1,"zb_get_in_buf_delayed: zb_nwk_leave_handler",(FMT__0));  
         zb_get_in_buf_delayed(zb_nwk_leave_ind_prnt);
       }
 
@@ -1575,6 +1590,7 @@ static void zb_nwk_leave_handler(zb_uint8_t param, zb_nwk_hdr_t *nwk_hdr, zb_uin
   }
   else
   {
+	  TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_nwk_leave_handler",(FMT__0));
     zb_free_buf(packet);
   }
 
@@ -1679,6 +1695,7 @@ void zb_nwk_do_leave(zb_uint8_t param, zb_uint8_t rejoin) ZB_SDCC_REENTRANT
     ZB_IEEE_ADDR_ZERO(ZB_NIB_EXT_PAN_ID());
     ZB_NIB_PAN_ID() = (zb_uint16_t)-1;
     ZB_NIB_NETWORK_ADDRESS() = (zb_uint16_t)-1; /* was commented with comment: comment for leave ED device (leave befo mgmt_rsp) */
+    TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_nwk_do_leave",(FMT__0));
     zb_free_buf(buf);
     TRACE_MSG(TRACE_NWK1, "LEAVE without rejoin", (FMT__0));
   }

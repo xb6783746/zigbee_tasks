@@ -52,11 +52,10 @@ PURPOSE: Mac layer API
 #include "zb_types.h"
 #include "zb_debug.h"
 #include "zb_bufpool.h"
-#include "zb_ubec24xx.h"
+
 #include "zb_ns3.h"
-#ifdef ZB_CC25XX
-#include "zb_cc25xx.h"
-#endif
+
+#include "zb_radio.h" // all transceiver files are here
 
 
 
@@ -545,7 +544,7 @@ zb_void_t zb_fcf_set_src_addressing_mode(zb_uint8_t *p_fcf, zb_uint8_t addr_mode
 
    @param p_fcf - pointer to 16bit FCF field.
 */
-
+// Read second ([1]) byte from frame control field and check its destination address type
 #define ZB_FCF_GET_DST_ADDRESSING_MODE( p_fcf )  (( (zb_uint_t)(( ( ( zb_uint8_t* ) ( p_fcf ) )[ZB_PKT_16B_FIRST_BYTE] ) & 0x0C) ) >> 2 )
 
 
@@ -2738,17 +2737,17 @@ void mac_add_invisible_short(zb_uint16_t addr);
 /* waiting for tx, this routine wasn't planned, but seems  */
 /* like it's needed for zb_realign_pan, coz it should not */
 /* be interrupted */
-#if !defined(ZB_TRANSPORT_8051_DATA_SPI) && !defined(ZB_TRANSPORT_LINUX_SPIDEV)
+#if  !defined(ZB_CORTEXM4) && !defined(ZB_TRANSPORT_8051_DATA_SPI) && !defined(ZB_TRANSPORT_LINUX_SPIDEV)
 #define ZB_WAIT_FOR_TX() while (!MAC_CTX().tx_cnt) ZB_GO_IDLE()
 #else
-#define ZB_WAIT_FOR_TX()                  \
-  while(!MAC_CTX().tx_cnt)          \
-  {                                 \
-          CHECK_INT_N_TIMER();            \
-    if (ZB_GET_TRANS_INT())         \
-    {                               \
-      zb_ubec_check_int_status();   \
-    }                               \
+#define ZB_WAIT_FOR_TX()                 	\
+  while(!MAC_CTX().tx_cnt)         			\
+  {                                 		\
+	CHECK_INT_N_TIMER();          			\
+    if (ZB_GET_TRANS_INT())        			\
+    {      									\
+		ZB_CHECK_INT_STATUS();					\
+    }                               		\
   }
 #endif
 /* the following macro used to skip tx check */

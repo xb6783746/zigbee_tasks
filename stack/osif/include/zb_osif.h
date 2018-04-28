@@ -47,59 +47,68 @@ PURPOSE: Main header for OS and platform depenednt stuff
 */
 
 #ifndef ZB_OSIF_H
-#define ZB_OSIF_H 1
+	#define ZB_OSIF_H 1
 
-/*! \addtogroup ZB_OSIF */
-/*! @{ */
+	/*! \addtogroup ZB_OSIF */
+	/*! @{ */
 
-#ifdef __IAR_SYSTEMS_ICC__
-#ifndef ZB_IAR
-#define ZB_IAR
-#endif
-#endif
+	#ifdef __IAR_SYSTEMS_ICC__
+		#ifndef ZB_IAR
+			#define ZB_IAR		
+		#endif
+	#endif
 
-#ifdef UNIX
-#include "zb_osif_unix.h"
-#elif defined ZB8051 || defined ZB_UZ2410 || defined ZB_CC25XX
-#include "zb_osif_8051.h"
-#else
-#error Port me!
-#endif
+	#ifdef UNIX
+		#include "zb_osif_unix.h"
+		
+	#elif defined ZB8051 || defined ZB_UZ2410 || defined ZB_CC25XX
+		#include "zb_osif_8051.h"
+		
+	#elif defined cortexm4
+		#include "zb_osif_cortexm4.h"
+		#define ZB_CORTEX_M4			// типа на всякий случай
+		
+	#else
+		#error Port me!
+		
+	#endif
 
-#if !defined KEIL
 
-#define MAIN() int main(int argc, char **argv)
-#define FAKE_ARGV
-#define ARGV_UNUSED ZVUNUSED(argc) ; ZVUNUSED(argv)
-#define MAIN_RETURN(v) return (v)
+	#if !defined KEIL
 
-#else
+		#define MAIN() int main(int argc, char **argv)
+		#define FAKE_ARGV
+		#define ARGV_UNUSED ZVUNUSED(argc) ; ZVUNUSED(argv)
+		#define MAIN_RETURN(v) return (v)
 
-#define MAIN() void main(void)
-#define FAKE_ARGV char **argv = NULL
-#define ARGV_UNUSED
-#define MAIN_RETURN(v)
+	#else
 
-#endif  /* KEIL */
+		#define MAIN() void main(void)
+		#define FAKE_ARGV char **argv = NULL
+		#define ARGV_UNUSED
+		#define MAIN_RETURN(v)
 
-#if defined SDCC && defined ZB_BANKED_BUILD
+	#endif  /* KEIL */
 
-#define  banked
-#define ZB_CB_NAME_MACRO(a) a ## func
+	#if defined SDCC && defined ZB_BANKED_BUILD
 
-/**
-   \par stub is function placed in the common bank which calls real function
-   from anothe bank.
- */
-#define ZB_CB_STUB(name)                                \
-void ZB_CB_NAME_MACRO(name)(zb_uint8_t param) ZB_SDCC_REENTRANT; \
-void name(zb_uint8_t param) ZB_SDCC_REENTRANT                    \
-{                                                       \
-  ZB_CB_NAME_MACRO(name) (param);                          \
-}
-#else  /* SDCC && ZB_BANKED_BUILD */
-#endif  /* SDCC && ZB_BANKED_BUILD */
+		#define  banked
+		#define ZB_CB_NAME_MACRO(a) a ## func
 
-/*! @} */
+	/**
+	   \par stub is function placed in the common bank which calls real function
+	   from anothe bank.
+	 */
+		#define ZB_CB_STUB(name)                                \
+		void ZB_CB_NAME_MACRO(name)(zb_uint8_t param) ZB_SDCC_REENTRANT; \
+		void name(zb_uint8_t param) ZB_SDCC_REENTRANT                    \
+		{                                                       \
+		ZB_CB_NAME_MACRO(name) (param);                          \
+		}
+		
+	#else  /* SDCC && ZB_BANKED_BUILD */
+	#endif  /* SDCC && ZB_BANKED_BUILD */
+
+	/*! @} */
 
 #endif /* ZB_OSIF_H */

@@ -78,6 +78,11 @@ Some additional run-time checks.
  //#define ZB_ARRAYS_CHECK
  #endif
 
+#if defined     STM32_E407          /* Olimex STM32-E407 */
+	#define ZB_BOARD          "olimex_stm32e407.h"
+#elif defined   STM32F4_DISCOVERY   /* STM32F4 high-performance discovery board */
+	#define ZB_BOARD          "zb_STM32F4discovery.h"
+#endif
 
 
 
@@ -659,7 +664,7 @@ If defined, platform is some 8051 clone
 #define ZB_LIMITED_FEATURES
 #endif
 
-#ifndef ZB_PLATFORM_LINUX_ARM_2400
+#if !defined  ZB_PLATFORM_LINUX_ARM_2400 || !defined cortexm4
 /* #define ZB_DEFAULT_APS_CHANNEL_MASK ZB_TRANSCEIVER_ALL_CHANNELS_MASK */
 #define ZB_DEFAULT_APS_CHANNEL_MASK (1l<<14)
 #else
@@ -916,6 +921,18 @@ If defined, platform is some 8051 clone
 #define ZB_N_VIZIBLE_ADDRESSES 6
 #endif
 
+#if defined cortexm4
+
+#define ZB_IO_BUF_SIZE 148
+
+#ifdef ZB_DEFAULT_APS_CHANNEL_MASK
+#undef ZB_DEFAULT_APS_CHANNEL_MASK
+#endif
+
+#define ZB_DEFAULT_APS_CHANNEL_MASK (1l<<16)
+#endif
+
+
 /* Certification defines */
 
 /**
@@ -937,7 +954,9 @@ If defined, platform is some 8051 clone
 */
 #define ZB_BLOCK_BROADCASTS_SLEEPY_ED
 
+#if !defined cortexm4
 #define ZB_DISABLE_APS_ACK_REQ
+#endif
 
 #define ZB_DISABLE_REJOIN_AFTER_SEC_FAIL
 

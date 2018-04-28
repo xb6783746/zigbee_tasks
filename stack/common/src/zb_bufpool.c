@@ -107,6 +107,10 @@ void verify_buf(zb_buf_t *b)
 #define VERIFY_BUF(b)
 #endif
 
+uint8_t buf_counter = 0;
+uint8_t alloc_a, alloc_b;
+
+
 static zb_buf_t *zb_get_buf(zb_uint8_t is_in)
 {
   zb_buf_t *buf = NULL;
@@ -131,10 +135,19 @@ static zb_buf_t *zb_get_buf(zb_uint8_t is_in)
       ZB_ASSERT(ZG->bpool.bufs_allocated[is_in] <= ZB_BUFS_LIMIT);
       buf->u.hdr.is_in_buf = is_in;
     }
-  }
+  }	
+  alloc_a = ZG->bpool.bufs_allocated[0];
+  alloc_b = ZG->bpool.bufs_allocated[1];
+  TRACE_MSG(TRACE_NWK1,"=================",(FMT__0));  
+  TRACE_MSG(TRACE_NWK1, "GET BUF %p",(FMT__P,(void*)buf));
+  TRACE_MSG(TRACE_NWK1, "ref %hd",(FMT__H,ZB_REF_FROM_BUF(buf)));
+  TRACE_MSG(TRACE_NWK1,"allocated 0: %hd",(FMT__H,alloc_a));
+  TRACE_MSG(TRACE_NWK1,"allocated 1: %hd",(FMT__H,alloc_b));
+  TRACE_MSG(TRACE_NWK1,"=================",(FMT__0));  
 #ifdef ZB_DEBUG_BUFFERS
-  TRACE_MSG( TRACE_MAC1, "zb_get_buf %hd: buffer %p, ref %hd, head %p, allocated %hd / %hd",
-             (FMT__H_P_H_P_H, is_in, buf, ZB_REF_FROM_BUF(buf), ZG->bpool.head, ZG->bpool.bufs_allocated[0], ZG->bpool.bufs_allocated[1]));
+  //TRACE_MSG( TRACE_MAC1, "zb_get_buf %hd: buffer %p, ref %hd, head %p, allocated %hd / %hd",
+             //(FMT__H_P_H_P_H, is_in, buf, ZB_REF_FROM_BUF(buf), ZG->bpool.head, ZG->bpool.bufs_allocated[0], ZG->bpool.bufs_allocated[1]));
+	
 #endif
 
   return buf;
@@ -143,6 +156,7 @@ static zb_buf_t *zb_get_buf(zb_uint8_t is_in)
 
 zb_buf_t *zb_get_in_buf()
 {
+	
   return zb_get_buf(1);
 }
 
@@ -212,9 +226,17 @@ void zb_free_buf(zb_buf_t *buf)
   ZG->bpool.bufs_allocated[buf->u.hdr.is_in_buf]--;
 
 #ifdef ZB_DEBUG_BUFFERS
-  TRACE_MSG(TRACE_NWK3, "zb_free_buf %p, ref %hd, in buf %hi allocated in %hd out %hd",
-            (FMT__P_H_H_H_H, buf, ZB_REF_FROM_BUF(buf), buf->u.hdr, buf->u.hdr.is_in_buf,
-             ZG->bpool.bufs_allocated[1], ZG->bpool.bufs_allocated[0]));
+ // TRACE_MSG(TRACE_NWK3, "zb_free_buf %p, ref %hd, in buf %hi allocated in %hd out %hd",
+   //         (FMT__P_H_H_H_H, buf, ZB_REF_FROM_BUF(buf), buf->u.hdr.is_in_buf,
+   //         ZG->bpool.bufs_allocated[1], ZG->bpool.bufs_allocated[0]));
+    alloc_a = ZG->bpool.bufs_allocated[0];
+	alloc_b = ZG->bpool.bufs_allocated[1];
+    TRACE_MSG(TRACE_NWK1,"=================",(FMT__0));       
+	TRACE_MSG(TRACE_NWK1,"FREE BUF %p ",(FMT__P,buf));
+	TRACE_MSG(TRACE_NWK1,"ref %hd",(FMT__H,ZB_REF_FROM_BUF(buf)));
+	TRACE_MSG(TRACE_NWK1,"allocated 0: %hd",(FMT__H,alloc_a));
+	TRACE_MSG(TRACE_NWK1,"allocated 1: %hd",(FMT__H,alloc_b));
+	TRACE_MSG(TRACE_NWK1,"=================",(FMT__0)); 
 #endif
 
   VERIFY_BUF(buf);

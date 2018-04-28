@@ -104,10 +104,12 @@ void zb_aps_in_command_handle(zb_uint8_t param) ZB_CALLBACK
 
     default:
       TRACE_MSG(TRACE_ERROR, "unknown aps cmd %hd", (FMT__H, *cmd_id_p));
+      TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_aps_in_command_handle",(FMT__0));
       zb_free_buf(ZB_BUF_FROM_REF(param));
       break;
   }
 #else
+	TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_aps_in_command_handle",(FMT__0));
   zb_free_buf(ZB_BUF_FROM_REF(param));
 #endif
 }

@@ -107,7 +107,7 @@ void zb_ib_load() ZB_CALLBACK;
 
 
 /**
-   Set Informational Bases refaults.
+   Set Informational Bases refaults.0
 
    @param rx_pipe - rx pipe name (for Unix) or node number (for ns build
                             in 8051 simulator)

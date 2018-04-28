@@ -69,7 +69,7 @@ void zb_zdo_init() ZB_CALLBACK;
    FIXME: maybe, put it into separate .c file?
  */
 ZB_SDCC_XDATA zb_globals_t g_zb;
-ZB_SDCC_XDATA zb_intr_globals_t g_izb;
+ZB_SDCC_XDATA ZB_VOLATILE zb_intr_globals_t g_izb;
 ZB_SDCC_XDATA zb_64bit_addr_t g_zero_addr={0,0,0,0,0,0,0,0};
 
 
@@ -110,12 +110,16 @@ void zb_init() ZB_CALLBACK
 #ifndef ZB8051
 #ifdef ZB_TRANSPORT_LINUX_SPIDEV
   zb_mac_transport_init();
+#elif defined cortexm4
+  zb_mac_transport_init();
 #else
   zb_mac_transport_init(rx_pipe, tx_pipe);
 #endif
-#elif defined ZB_NS_BUILD
+#elif defined ZB_NS_BUILD 
   zb_mac_transport_init();
 #endif
+
+
 
   zb_mac_init();
 

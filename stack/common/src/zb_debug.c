@@ -51,6 +51,7 @@ PURPOSE: debug stuff
 
 #include "zb_bank_common.h"
 
+
 /*! \addtogroup ZB_DEBUG */
 /*! @{ */
 
@@ -63,12 +64,20 @@ PURPOSE: debug stuff
  */
 void zb_abort(char *caller_file, int caller_line)
 {
+  #if defined cortexm4
+    (void)caller_file;
+    (void)caller_line;
+  #endif
   TRACE_MSG (TRACE_ERROR, "Abort from %s:%d ", (FMT__D, caller_file, (int)caller_line));
   ZB_ABORT();
 }
 
 zb_void_t zb_assert(zb_char_t *file_name, zb_int_t line_number/*, zb_bool_t expr*//*, zb_char_t *expr_name*/)
 {
+  #if defined cortexm4
+    (void)file_name;
+    (void)line_number;
+  #endif
   TRACE_MSG (TRACE_ERROR, "Assertion failed", (file_name, line_number, 0));
   ZB_ABORT();
 }

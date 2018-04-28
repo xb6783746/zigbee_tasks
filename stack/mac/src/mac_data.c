@@ -224,6 +224,7 @@ zb_ret_t zb_mac_check_ack()
       else
       {
         /* FIXME: there's no states and a lot of other changes. */
+        TRACE_MSG(TRACE_NWK1,"zb_get_in_buf: zb_mac_check_ack",(FMT__0));
         zb_buf_t *buf = zb_get_in_buf();
         if (buf)
         {
@@ -741,6 +742,7 @@ void zb_handle_data_frame(zb_uint8_t param) ZB_CALLBACK
   }
   else if (ret != RET_BLOCKED)
   {
+	TRACE_MSG(TRACE_NWK1,"zb_free_buf: zb_handle_data_frame",(FMT__0));
     zb_free_buf(MAC_CTX().pending_buf);
     MAC_CTX().pending_buf = NULL;
   }

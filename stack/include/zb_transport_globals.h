@@ -65,6 +65,10 @@ PURPOSE: UART transport globals
 #include "zb_transport_linux_spidev.h"
 #endif
 
+#ifdef ZB_TRANSPORT_CORTEXM4
+#include "zb_transport_cortexm4.h"
+#endif
+
 /*! @} */
 /*! \endcond */
 
